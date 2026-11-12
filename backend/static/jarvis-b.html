@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><title>Jarvis · Quant Lab</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4f1e9; --paper2:#fbf9f3; --ink:#14181d; --ink2:#3b4148; --mut:#6f6a5e; --faint:#a8a294;
+  --rule:#d9d3c5; --rule2:#c4bdab; --blue:#1f49ff; --red:#dc3b40; --green:#138a52; --amber:#b9791a; --violet:#6b3df0;
+  --grid:#0000000d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;line-height:1.4;font-feature-settings:'tnum' 1;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+a{color:inherit;text-decoration:none}
+.pos{color:var(--green)}.neg{color:var(--red)}.flat{color:var(--mut)}.mut{color:var(--mut)}.faint{color:var(--faint)}
+/* top bar */
+.bar{position:sticky;top:0;z-index:20;background:var(--ink);color:var(--paper);display:flex;align-items:center;gap:0;padding:0 16px;height:46px;border-bottom:2px solid var(--blue)}
+.bar .brand{font-weight:700;letter-spacing:.04em;font-size:14px;padding-right:18px}
+.bar .brand i{color:#7fa0ff;font-style:normal}
+.tabs{display:flex;height:100%}
+.tabs a{display:flex;align-items:center;padding:0 16px;height:100%;color:#aeb6c2;font-size:11px;letter-spacing:.13em;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tabs a:hover{color:#fff}
+.tabs a.on{color:#fff;border-bottom-color:var(--blue);background:#1c2128}
+.bar .sp{flex:1}
+.bar .stat{padding:0 14px;border-left:1px solid #2a2f37;height:100%;display:flex;flex-direction:column;justify-content:center}
+.bar .stat .l{font-size:8px;letter-spacing:.18em;color:#7a828d;text-transform:uppercase}
+.bar .stat .v{font-size:14px;font-weight:600}
+.bar .ldot{width:7px;height:7px;border-radius:50%;background:#33d27f;margin-right:6px;display:inline-block}
+.bar .ldot.off{background:var(--red)}
+.bar .sw{padding:0 12px;color:#aeb6c2;font-size:10px;letter-spacing:.1em;border-left:1px solid #2a2f37;height:100%;display:flex;align-items:center}
+.bar .sw:hover{color:#fff}
+.wrap{padding:18px;max-width:1700px;margin:0 auto}
+/* card / module */
+.mod{background:var(--paper2);border:1px solid var(--rule2);margin-bottom:14px}
+.mh{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);padding:7px 12px;background:linear-gradient(180deg,#fff,#f3efe6)}
+.mh .t{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--ink2)}
+.mh .t b{color:var(--blue)}
+.mh .m{font-size:9.5px;color:var(--mut);letter-spacing:.06em}
+.mb{padding:12px}
+.cols{display:grid;gap:14px}
+.fig{font-feature-settings:'tnum' 1}
+/* metric cells */
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
+.cell{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8px 10px;background:var(--paper2)}
+.cell .l{font-size:8px;letter-spacing:.13em;color:var(--mut);text-transform:uppercase}
+.cell .v{font-size:17px;font-weight:600;letter-spacing:-.3px;line-height:1.15}
+.cell .s{font-size:9px;color:var(--mut)}
+.big{font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+.kicker{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);text-align:right;padding:6px 8px;border-bottom:1.5px solid var(--ink);cursor:pointer;white-space:nowrap;position:sticky;top:46px;background:#f3efe6}
+thead th:first-child{text-align:left}
+thead th.on{color:var(--blue)}
+tbody td{padding:5px 8px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap;font-feature-settings:'tnum' 1}
+tbody td:first-child{text-align:left}
+tbody tr:nth-child(even){background:#00000005}
+tbody tr:hover{background:#1f49ff12;cursor:pointer}
+.tk{font-weight:600}.tk small{color:var(--faint);font-size:8.5px;margin-left:5px}
+.nm{color:var(--mut);font-size:9px;display:block;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctrls{display:flex;gap:7px;align-items:center}
+.ctrls input{background:#fff;border:1px solid var(--rule2);color:var(--ink);font-family:inherit;font-size:11px;padding:5px 9px;width:180px;outline:none}
+.ctrls input:focus{border-color:var(--blue)}
+.tb{background:#fff;border:1px solid var(--rule2);color:var(--mut);font-family:inherit;font-size:9px;letter-spacing:.1em;padding:4px 9px;cursor:pointer;text-transform:uppercase}
+.tb.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.sm{border:1px solid var(--rule);background:#fff;padding:9px}
+.sm .h{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;display:flex;justify-content:space-between}
+.row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;border-bottom:1px solid var(--rule)}
+.row:last-child{border-bottom:none}
+.row .tk{flex:0 0 52px}
+.bar-mini{height:8px;border:1px solid var(--rule2)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--mut);margin-top:8px}.legend .li{display:flex;gap:6px;align-items:center}.legend .sw{width:14px;height:3px}
+.jc-tip{background:var(--ink);color:var(--paper);font-family:'IBM Plex Mono';font-size:10px;border:1px solid #000}
+.chip{display:inline-block;min-width:30px;text-align:center;color:#fff;border-radius:2px;padding:1px 6px;font-weight:600;font-size:10px}
+.scroll{overflow:auto}.scroll::-webkit-scrollbar{width:8px;height:8px}.scroll::-webkit-scrollbar-thumb{background:var(--rule2)}
+.back{display:inline-block;color:var(--blue);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;margin-bottom:10px}
+.empty{color:var(--faint);text-align:center;padding:38px}
+.flag{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:10.5px;cursor:pointer}.flag .tk{flex:0 0 50px}
+.note{font-size:10px;color:var(--mut);border-left:2px solid var(--blue);padding-left:8px}
+h1.page{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">JARVIS<i>//</i>QUANT·LAB</div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="sp"></div>
+  <div class="stat"><span class="l">Predicted 1Y</span><span class="v" id="b-pred">—</span></div>
+  <div class="stat"><span class="l">NAV</span><span class="v" id="b-val">—</span></div>
+  <div class="stat"><span class="l"><span class="ldot" id="b-dot"></span><span id="b-live">…</span></span><span class="v" style="font-size:10px;color:#7a828d" id="b-clock"></span></div>
+  <a class="sw" href="/">⇆ design</a>
+</div>
+<div class="wrap" id="view"><div class="empty">loading instrument…</div></div>
+<script src="/static/jarvis-core.js"></script>
+<script>
+const PAL=['#1f49ff','#6b3df0','#b9791a','#138a52','#dc3b40','#0e8a8a','#c0479e','#5a7d12'];
+const COPT={grid:'#e2ddd0',axis:'#8a8273',ink:'#5a5448'};
+const NAV=[['overview','Overview'],['pies','Pies'],['holdings','Holdings'],['sectors','Sectors'],['quant','Quant']];
+const $=id=>document.getElementById(id),g=(s,d)=>JC.get(s,d);
+let sortKey='nav_pct',sortDir=-1,filter='';
+$('tabs').innerHTML=NAV.map(([k,l])=>`<a href="#/${k}" data-k="${k}">${l}</a>`).join('');
+function setActive(k){document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.k===k));}
+function mod(t,m){const e=JC.el('div',{class:'mod'});e.innerHTML=`<div class="mh"><div class="t">${t}</div>${m?`<div class="m">${m}</div>`:''}</div>`;const b=JC.el('div',{class:'mb'});e.append(b);return{e,b};}
+function cell(l,v,cls,s){return `<div class="cell"><div class="l">${l}</div><div class="v ${cls||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;}
+function chip(s){if(s==null)return'<span class="mut">—</span>';const c=s>=70?'var(--green)':s>=45?'var(--amber)':'var(--red)';return `<span class="chip" style="background:${c}">${s.toFixed(0)}</span>`;}
+function chrome(){const rk=g('rankings',{}),acc=g('t212_account',{});const pp=rk.portfolio_predicted_profit_1y;
+  $('b-pred').innerHTML=pp==null?'—':`<span class="${JC.sgn(pp)}">${(pp>=0?'+':'')+JC.moneyC(pp)}</span>`;
+  $('b-val').textContent=JC.moneyC(acc.total_value);
+  const ok=JC.store.connected;$('b-dot').className='ldot'+(ok?'':' off');$('b-live').textContent=ok?'LIVE':'OFFLINE';}
+function clock(){$('b-clock').textContent=new Date().toISOString().slice(11,19)}
+setInterval(clock,1000);
+
+function route(live){
+  const h=location.hash.replace(/^#\//,'')||'overview',[page,arg]=h.split('/');setActive(page);
+  const v=$('view');const _sy=live?v.scrollTop:0;
+  try{({overview:renderOverview,pies:renderPies,holdings:renderHoldings,sectors:renderSectors,quant:renderQuant,stock:renderStock,pie:renderPie}[page]||renderOverview)(v,arg&&decodeURIComponent(arg));}
+  catch(e){v.innerHTML=`<div class="empty">render error: ${e.message}</div>`;console.error(e);}
+  v.scrollTop=_sy;
+}
+let ovR=0;
+function renderOverview(v){
+  const acc=g('t212_account',{}),perf=g('performance_overall',{}),st=perf.stats||{},q=g('performance_quant',{}),mc=q.monte_carlo||{},m=q.metrics||{},rk=g('rankings',{}),bl=perf.benchmark_label||'S&P 500';
+  const pp=rk.portfolio_predicted_profit_1y,hv=rk.holdings_value||st.holdings_value;
+  v.innerHTML='<h1 class="page">Instrument · Portfolio Overview</h1>';
+  // headline row
+  const top=JC.el('div',{class:'cols',style:'grid-template-columns:300px 1fr 1fr'});
+  const h0=mod('Predicted profit','MC · 1Y · drift '+(mc.assumed_drift_pct!=null?mc.assumed_drift_pct+'%':'—'));
+  h0.b.innerHTML=`<div class="kicker">Expected 1Y profit</div><div class="big ${JC.sgn(pp)}">${pp==null?'—':(pp>=0?'+':'')+JC.moneyC(pp)}</div>
+    <div class="mut" style="font-size:10px;margin:4px 0 10px">on ${JC.money(hv)} · <b class="${(mc.prob_profit>=50)?'pos':'neg'}">${mc.prob_profit!=null?mc.prob_profit+'% profit odds':''}</b></div>
+    <div class="cells" style="grid-template-columns:1fr 1fr">${cell('Expected',JC.moneyC((mc.terminal||{}).mean))}${cell('Median',JC.moneyC((mc.terminal||{}).p50))}${cell('P95',JC.moneyC((mc.terminal||{}).p95),'pos')}${cell('P5',JC.moneyC((mc.terminal||{}).p5),'neg')}</div>`;
+  const h1=mod('Value vs '+bl,'reconstructed · same cash');h1.b.innerHTML=`<div class="ctrls" style="margin-bottom:6px" id="bovr">${[['21','1M'],['63','3M'],['126','6M'],['0','1Y']].map(([r,l])=>`<button class="tb ${(''+ovR===r)?'on':''}" data-r="${r}">${l}</button>`).join('')}</div><div id="b-curve"></div><div class="legend" id="b-leg"></div>`;
+  const h2=mod('Monte Carlo','1Y forward cone');h2.b.innerHTML='<div id="b-fan"></div>';
+  top.append(h0.e,h1.e,h2.e);v.append(top);
+  // metric cells
+  const cm=JC.el('div',{class:'mod'});const ret=acc.invested?acc.ppl/acc.invested*100:0;
+  cm.innerHTML=`<div class="cells">${[
+    cell('NAV',JC.money(acc.total_value),'',(acc.positions||0)+' pos'),
+    cell('Invested',JC.money(acc.invested)),
+    cell('Unreal P&L',(acc.ppl>=0?'+':'')+JC.moneyC(acc.ppl),JC.sgn(acc.ppl),JC.pct(ret)),
+    cell('CAGR',JC.pct(st.cagr_pct),JC.sgn(st.cagr_pct)),
+    cell('Sharpe',JC.num(st.sharpe),st.sharpe>=1?'pos':''),
+    cell('Sortino',JC.num(st.sortino)),
+    cell('Vol',JC.pctp(st.vol_ann_pct),'',''),
+    cell('Max DD',JC.pct(st.max_dd_pct),'neg'),
+    cell('VaR95 1Y',JC.moneyC(mc.var_95_1y),'neg'),
+    cell('vs '+bl,JC.moneyC(st.vs_sp_gbp),JC.sgn(st.vs_sp_gbp)),
+    cell('Info ratio',JC.num(m.information_ratio),JC.sgn(m.information_ratio)),
+    cell('Eff. holds',JC.num((g('correlation_full',{}).effective_holdings),1),'accent'),
+  ].join('')}</div>`;v.append(cm);
+  // small multiples
+  const sm=JC.el('div',{class:'sm-grid'});
+  sm.innerHTML=`<div class="sm"><div class="h">Top predicted profit</div><div id="sm-pp"></div></div>
+    <div class="sm"><div class="h">Momentum · 1M</div><div id="sm-mom"></div></div>
+    <div class="sm"><div class="h">Sector exposure</div><div id="sm-sec"></div></div>
+    <div class="sm"><div class="h">Risk flags <span class="neg" id="sm-nflag"></span></div><div id="sm-flag"></div></div>`;
+  v.append(sm);
+  setTimeout(()=>{
+    const sl=a=>ovR>0&&a.length>ovR+1?a.slice(a.length-ovR-1):a;
+    JC.lineChart($('b-curve'),[{name:'Portfolio',color:'#1f49ff',points:sl(perf.curve||[]).map(p=>({t:p.t,y:p.v})),fill:true,width:2},(perf.sp_equiv||[]).length?{name:bl,color:'#b9791a',points:sl(perf.sp_equiv||[]).map(p=>({t:p.t,y:p.v})),dash:'4 3',width:1.4}:null].filter(Boolean),Object.assign({height:188,fmtY:JC.moneyC},COPT));
+    $('b-leg').innerHTML=`<div class="li"><span class="sw" style="background:#1f49ff"></span>Portfolio</div><div class="li"><span class="sw" style="background:#b9791a"></span>${bl}</div>`;
+    JC.fanChart($('b-fan'),mc.fan||[],{height:210,color:'#1f49ff',band1:'rgba(31,73,255,.10)',band2:'rgba(31,73,255,.22)',grid:COPT.grid,axis:COPT.axis});
+    miniBars('sm-pp',(rk.by_predicted_profit||[]).slice(0,6),'predicted_profit_1y',v=>JC.moneyC(v));
+    miniBars('sm-mom',(g('performance_holdings',[])).filter(x=>x.ret_1m!=null).sort((a,b)=>b.ret_1m-a.ret_1m).slice(0,6),'ret_1m',v=>JC.pct(v,1));
+    JC.bars($('sm-sec'),(g('sector_exposure',{}).by_sector||[]).slice(0,6).map(s=>({label:s.label,pct:s.pct,value:s.value})),{colors:PAL,track:'#ece7da',ink:'#14181d',sub:'#6f6a5e',showVal:false});
+    const fl=(g('rankings',{}).flags||{}).risk||[];$('sm-nflag').textContent=fl.length;
+    $('sm-flag').innerHTML=fl.slice(0,6).map(f=>`<div class="row" onclick="location.hash='#/stock/${f.ticker}'"><span class="tk">${f.ticker}</span><span class="neg" style="font-size:10px">${f.label}</span></div>`).join('')||'<span class="mut">none</span>';
+    $('bovr').onclick=e=>{if(e.target.dataset.r!=null){ovR=+e.target.dataset.r;route();}};
+  });
+}
+function miniBars(id,rows,key,fmt){const el=$(id);if(!el)return;const max=Math.max(...rows.map(r=>Math.abs(r[key]||0)),1);
+  el.innerHTML=rows.map(r=>`<div class="row" onclick="location.hash='#/stock/${r.ticker}'"><span class="tk">${r.ticker}</span><span class="bar-mini" style="flex:1;background:linear-gradient(90deg,${(r[key]||0)>=0?'var(--green)':'var(--red)'} ${Math.abs(r[key]||0)/max*100}%,transparent 0)"></span><span class="${JC.sgn(r[key])}" style="flex:0 0 58px;text-align:right">${fmt(r[key])}</span></div>`).join('');}
+
+const HCOLS=[['ticker','Ticker',0],['sector','Sector',0],['nav_pct','NAV%',1],['return_pct','Ret',1],['ppl','P&L',1],['vol_ann_pct','σ',1],['sharpe','Sharpe',1],['beta','β',1],['momentum_12_1_pct','Mom',1],['max_dd_pct','MaxDD',1],['score','Score',1],['predicted_profit_1y','Pred1Y',1],['prob_profit','P(+)',1]];
+function renderHoldings(v){
+  v.innerHTML='<h1 class="page">Holdings · full cross-section</h1>';
+  const{e,b}=mod('Securities · n='+(g('security_analytics',[]).length),'click a row to drill in');
+  e.querySelector('.mh').insertAdjacentHTML('beforeend',`<div class="ctrls"><input id="bfil" placeholder="filter…" value="${filter}"><a class="tb" href="/api/export/securities.csv">CSV</a></div>`);
+  b.style.padding='0';b.classList.add('scroll');b.style.maxHeight='calc(100vh-150px)';b.innerHTML='<table id="bt"></table>';v.append(e);
+  drawH();$('bfil').oninput=ev=>{filter=ev.target.value;drawH();};
+}
+function drawH(){let rows=g('security_analytics',[]).slice();if(filter){const q=filter.toLowerCase();rows=rows.filter(r=>(r.ticker||'').toLowerCase().includes(q)||(r.name||'').toLowerCase().includes(q));}
+  rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];if(typeof x==='string')return sortDir*(''+y).localeCompare(''+x);return sortDir*((y??-1e9)-(x??-1e9));});
+  $('bt').innerHTML=`<thead><tr>${HCOLS.map(([k,l])=>`<th data-k="${k}" class="${k===sortKey?'on':''}">${l}${k===sortKey?(sortDir<0?'↓':'↑'):''}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr onclick="location.hash='#/stock/${r.ticker}'"><td><span class="tk">${r.ticker}</span><span class="nm">${r.name||''}</span></td><td class="mut" style="text-align:left">${r.sector||'—'}</td><td>${JC.pctp(r.nav_pct)}</td><td class="${JC.sgn(r.return_pct)}">${JC.pct(r.return_pct)}</td><td class="${JC.sgn(r.ppl)}">${JC.moneyC(r.ppl)}</td><td>${JC.pctp(r.vol_ann_pct)}</td><td class="${r.sharpe>=1?'pos':''}">${JC.num(r.sharpe)}</td><td>${JC.num(r.beta)}</td><td class="${JC.sgn(r.momentum_12_1_pct)}">${JC.pct(r.momentum_12_1_pct,0)}</td><td class="neg">${JC.pctp(r.max_dd_pct)}</td><td>${chip(r.score)}</td><td class="${JC.sgn(r.predicted_profit_1y)}">${JC.moneyC(r.predicted_profit_1y)}</td><td class="mut">${r.prob_profit!=null?r.prob_profit+'%':'—'}</td></tr>`).join('')}</tbody>`;
+  $('bt').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k===sortKey)sortDir*=-1;else{sortKey=k;sortDir=(k==='ticker'||k==='sector')?1:-1;}drawH();});}
+
+async function renderStock(v,tk){
+  v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ holdings</span><div class="empty">loading ${tk}…</div>`;
+  let d;try{d=await JC.api('/api/stock/'+encodeURIComponent(tk));}catch{v.innerHTML='<div class="empty">failed</div>';return;}
+  if(d.error){v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ holdings</span><div class="empty">${d.error}</div>`;return;}
+  const s=d.summary||{},pos=d.position||{},a=d.analyst||{},f=d.fundamentals||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ holdings</span>`;
+  const head=JC.el('div',{class:'mod'});head.innerHTML=`<div class="mb" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:flex-end"><div><div class="big" style="font-size:26px">${pos.ticker||tk} <span class="mut" style="font-size:12px">${pos.exchange||''}</span></div><div class="mut">${pos.name||''} · ${f.sector||''} · ${f.industry||''}</div>${d.note?`<div class="note" style="margin-top:6px">${d.note}</div>`:''}</div><div style="display:flex;gap:22px;text-align:right"><div><div class="kicker">Pred 1Y</div><div class="big ${JC.sgn(s.predicted_profit_1y)}" style="font-size:22px">${JC.moneyC(s.predicted_profit_1y)}</div><div class="mut">${s.prob_profit!=null?s.prob_profit+'% odds':''}</div></div><div><div class="kicker">P&L</div><div class="big ${JC.sgn(pos.ppl)}" style="font-size:22px">${JC.moneyC(pos.ppl)}</div><div class="mut">${JC.pct(pos.return_pct)}</div></div></div></div>`;
+  v.append(head);
+  const r1=JC.el('div',{class:'cols',style:'grid-template-columns:1.5fr 1fr'});
+  const pc=mod('Price · 1Y','close + 50/200 MA');pc.b.innerHTML='<div id="bs-price"></div>';
+  const fan=mod('Monte Carlo',(mc.n_sims?mc.n_sims.toLocaleString()+' paths':''));fan.b.innerHTML='<div id="bs-fan"></div>';
+  r1.append(pc.e,fan.e);v.append(r1);
+  const an=mod('Analytics & forecast','trailing 1Y');
+  an.b.innerHTML=`<div class="cells">${[['CAGR',JC.pct(s.cagr_pct),JC.sgn(s.cagr_pct)],['σ ann',JC.pctp(s.vol_ann_pct)],['Sharpe',JC.num(s.sharpe),s.sharpe>=1?'pos':''],['Sortino',JC.num(s.sortino)],['β',JC.num(s.beta)],['Max DD',JC.pct(s.max_dd_pct),'neg'],['Mom 12-1',JC.pct(s.momentum_12_1_pct,0),JC.sgn(s.momentum_12_1_pct)],['52w pos',JC.pctp(s.range_52w_pct)],['MA cross',s.ma_cross||'—',s.ma_cross==='golden'?'pos':s.ma_cross==='death'?'neg':''],['VaR95',('-'+JC.pctp(s.var_95_pct)),'neg'],['Corr S&P',JC.num(s.correlation)],['Win rate',JC.pctp(s.win_rate_pct)],['Target',a.target_mean!=null?JC.num(a.target_mean,2):'—'],['Upside',a.upside_pct!=null?JC.pct(a.upside_pct,0):'—',JC.sgn(a.upside_pct)],['Rating',a.recommendation||'—'],['P/E',f.trailing_pe!=null?JC.num(f.trailing_pe,1):'—'],['Mkt cap',f.market_cap!=null?JC.moneyC(f.market_cap):'—'],['Yield',f.dividend_yield!=null?JC.pctp(f.dividend_yield*100):'—']].map(c=>cell(c[0],c[1],c[2])).join('')}</div>`;
+  v.append(an.e);
+  const dist=mod('Return distribution','daily · vs normal');dist.b.innerHTML='<div id="bs-hist"></div>';v.append(dist.e);
+  setTimeout(()=>{
+    JC.lineChart($('bs-price'),[{name:pos.ticker||tk,color:'#1f49ff',points:(d.price_curve||[]).map(p=>({t:p.t,y:p.px})),fill:true,width:1.8},(d.ma50_line||[]).length?{name:'50d',color:'#b9791a',points:d.ma50_line.map(p=>({t:p.t,y:p.v})),width:1.2}:null,(d.ma200_line||[]).length?{name:'200d',color:'#6b3df0',points:d.ma200_line.map(p=>({t:p.t,y:p.v})),width:1.2}:null].filter(Boolean),Object.assign({height:250,fmtY:v=>JC.num(v,2)},COPT));
+    JC.fanChart($('bs-fan'),mc.fan||[],{height:250,color:'#138a52',band1:'rgba(19,138,82,.10)',band2:'rgba(19,138,82,.22)',grid:COPT.grid,axis:COPT.axis});
+    JC.histogram($('bs-hist'),d.histogram||{},{height:180,bar:'#1f49ff',line:'#b9791a',grid:COPT.grid,axis:COPT.axis});
+  });
+}
+
+function renderPies(v){
+  v.innerHTML='<h1 class="page">Pies · per-strategy quant</h1>';
+  const pies=g('performance_pies',[]).slice().sort((a,b)=>(b.current_value||0)-(a.current_value||0));
+  const grid=JC.el('div',{class:'sm-grid',style:'grid-template-columns:repeat(auto-fill,minmax(260px,1fr))'});
+  pies.forEach(p=>{const st=p.stats||{};const c=JC.el('div',{class:'sm',style:'cursor:pointer;padding:12px'});c.onclick=()=>location.hash='#/pie/'+p.id;
+    c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:13px">${p.name||('Pie '+p.id)}</b><span class="faint">#${p.id}</span></div>
+      <div style="display:flex;justify-content:space-between;margin:6px 0"><div><div class="kicker">Pred 1Y</div><div class="big ${JC.sgn(p.predicted_profit_1y)}" style="font-size:20px">${JC.moneyC(p.predicted_profit_1y)}</div></div><div style="text-align:right"><div class="kicker">Value</div><div style="font-size:14px;font-weight:600">${JC.moneyC(p.current_value)}</div></div></div>
+      <div id="bp-sp-${p.id}" style="height:38px;margin-bottom:6px"></div>
+      <div class="cells" style="grid-template-columns:repeat(4,1fr);border-left:1px solid var(--rule);border-top:1px solid var(--rule)">${cell('Ret',JC.pct(p.result_pct,0),JC.sgn(p.result_pct))}${cell('Shrp',JC.num(st.sharpe))}${cell('DD',JC.pctp(st.max_dd_pct),'neg')}${cell('P(+)',p.prob_profit!=null?p.prob_profit+'%':'—')}</div>
+      <div class="mut" style="font-size:9px;margin-top:6px">${p.slice_count} slices · ${JC.pctp(p.contribution_pct)} of book · gap ${JC.pctp(p.rebalance_gap_pct)}</div>`;
+    grid.append(c);
+    setTimeout(()=>{const cv=p.curve||[];if(cv.length>1)JC.lineChart($('bp-sp-'+p.id),[{name:'',color:p.predicted_profit_1y>=0?'#138a52':'#dc3b40',points:cv.map(x=>({t:x.t,y:x.v})),fill:true,width:1.4}],{height:38,padL:2,padR:2,padT:3,padB:2,grid:'transparent',axis:'transparent',fmtY:()=>''});});
+  });
+  v.append(grid);
+}
+async function renderPie(v,pid){
+  v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ pies</span><div class="empty">loading…</div>`;
+  let d;try{d=await JC.api('/api/pie/'+pid);}catch{v.innerHTML='<div class="empty">failed</div>';return;}
+  if(d.error){v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ pies</span><div class="empty">${d.error}</div>`;return;}
+  const p=d.pie||{},st=d.stats||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ pies</span>`;
+  const head=JC.el('div',{class:'mod'});head.innerHTML=`<div class="mb" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:flex-end"><div><div class="big" style="font-size:24px">${p.name}</div><div class="mut">${(d.slices||[]).length} slices · invested ${JC.money(p.invested)} · ${p.status||''}</div></div><div style="text-align:right"><div class="kicker">Value</div><div class="big" style="font-size:22px">${JC.moneyC(p.current_value)}</div><div class="${JC.sgn(p.result_pct)}">${JC.pct(p.result_pct)}</div></div></div>`;v.append(head);
+  const r1=JC.el('div',{class:'cols',style:'grid-template-columns:1.5fr 1fr'});
+  const cv=mod('Value curve','1Y');cv.b.innerHTML='<div id="bpc"></div>';const fan=mod('Monte Carlo','1Y');fan.b.innerHTML='<div id="bpf"></div>';r1.append(cv.e,fan.e);v.append(r1);
+  const an=mod('Analytics');an.b.innerHTML=`<div class="cells">${[['Total ret',JC.pct(st.total_return_pct),JC.sgn(st.total_return_pct)],['CAGR',JC.pct(st.cagr_pct),JC.sgn(st.cagr_pct)],['Sharpe',JC.num(st.sharpe),st.sharpe>=1?'pos':''],['Sortino',JC.num(st.sortino)],['Vol',JC.pctp(st.vol_ann_pct)],['Max DD',JC.pct(st.max_dd_pct),'neg'],['VaR95',('-'+JC.pctp(st.var_95_pct)),'neg'],['β',JC.num(st.beta)]].map(c=>cell(c[0],c[1],c[2])).join('')}</div>`;v.append(an.e);
+  const sl=mod('Holdings','expected vs current');sl.b.style.padding='0';sl.b.classList.add('scroll');sl.b.style.maxHeight='420px';
+  sl.b.innerHTML=`<table><thead><tr><th>Ticker</th><th>Sector</th><th>Exp</th><th>Cur</th><th>Drift</th><th>Ret</th></tr></thead><tbody>${(d.slices||[]).sort((a,b)=>b.current-a.current).map(s=>`<tr onclick="location.hash='#/stock/${s.ticker}'"><td class="tk">${s.ticker}</td><td class="mut" style="text-align:left">${s.sector||'—'}</td><td>${JC.pctp(s.expected)}</td><td>${JC.pctp(s.current)}</td><td class="${JC.sgn(s.current-s.expected)}">${JC.pct(s.current-s.expected,1)}</td><td class="${JC.sgn(s.result_pct)}">${JC.pct(s.result_pct,1)}</td></tr>`).join('')}</tbody></table>`;v.append(sl.e);
+  setTimeout(()=>{JC.lineChart($('bpc'),[{name:p.name,color:'#1f49ff',points:(d.curve||[]).map(x=>({t:x.t,y:x.v})),fill:true,width:1.8}],Object.assign({height:240,fmtY:JC.moneyC},COPT));JC.fanChart($('bpf'),mc.fan||[],{height:240,color:'#6b3df0',band1:'rgba(107,61,240,.10)',band2:'rgba(107,61,240,.22)',grid:COPT.grid,axis:COPT.axis});});
+}
+
+function renderSectors(v){
+  const sx=g('sector_exposure',{});v.innerHTML='<h1 class="page">Sector & thematic exposure</h1>';
+  const tm=mod('Sector map','area=value · colour=predicted profit','HHI '+(sx.sector_hhi||'—'));tm.b.innerHTML='<div id="bsec-tree" style="height:280px"></div>';v.append(tm.e);
+  const r=JC.el('div',{class:'cols',style:'grid-template-columns:1fr 1fr'});
+  const a=mod('Exposure','% of holdings');a.b.innerHTML='<div id="bsec-bars"></div>';
+  const b2=mod('Forward attribution','predicted £ by sector');b2.b.innerHTML='<div id="bsec-attr"></div>';r.append(a.e,b2.e);v.append(r);
+  const r2=JC.el('div',{class:'cols',style:'grid-template-columns:1fr 1fr'});
+  const th=mod('Thematic','tagged themes');th.b.innerHTML='<div id="bsec-theme"></div>';
+  const gx=mod('Geo × sector','matrix');gx.b.classList.add('scroll');gx.b.innerHTML='<div id="bsec-geo"></div>';r2.append(th.e,gx.e);v.append(r2);
+  setTimeout(()=>{const secs=sx.by_sector||[],mp=Math.max(...secs.map(s=>Math.abs(s.predicted_profit||0)),1);
+    JC.treemap($('bsec-tree'),secs.map(s=>({label:s.label,value:s.value,sub:s,color:JC.diverge((s.predicted_profit||0)/mp,'#dc3b40','#e9e3d5','#138a52')})),{height:280,ink:'#14181d',stroke:'#fbf9f3',fmt:d=>d.label,fmt2:d=>JC.pctp(d.sub.pct),tip:d=>`${JC.pctp(d.sub.pct)} · ${JC.moneyC(d.value)} · pred ${JC.moneyC(d.sub.predicted_profit)}`});
+    JC.bars($('bsec-bars'),secs.map(s=>({label:s.label,pct:s.pct,value:s.value})),{colors:PAL,track:'#ece7da',ink:'#14181d',sub:'#6f6a5e'});
+    JC.bars($('bsec-attr'),secs.slice().sort((a,b)=>(b.predicted_profit||0)-(a.predicted_profit||0)).map(s=>({label:s.label,pct:Math.abs(s.predicted_profit)/mp*100,value:s.predicted_profit,color:s.predicted_profit>=0?'#138a52':'#dc3b40'})),{track:'#ece7da',ink:'#14181d',sub:'#6f6a5e',fmt:d=>JC.moneyC(d.value),showVal:false});
+    const t2=sx.by_theme||[];if(t2.length)JC.bars($('bsec-theme'),t2.map(t=>({label:t.label,pct:t.pct,value:t.value})),{colors:PAL,track:'#ece7da',ink:'#14181d',sub:'#6f6a5e'});else $('bsec-theme').innerHTML='<div class="note">No themes matched — edit ~/.jarvis/jarvis.config.json</div>';
+    const gs=sx.geo_sector;if(gs&&gs.geos&&gs.geos.length){const mx=Math.max(...gs.matrix.flat(),1);JC.heatmap($('bsec-geo'),{rows:gs.geos,cols:gs.sectors,matrix:gs.matrix},{cell:19,scale:v=>JC.diverge(Math.min(1,v/mx),'#fff','#fff','#1f49ff'),fmt:v=>JC.moneyC(v),diagDim:false,ink:'#6f6a5e'});}
+  });
+}
+
+function renderQuant(v){
+  const rk=g('rankings',{}),q=g('performance_quant',{}),mc=q.monte_carlo||{},m=q.metrics||{},co=g('correlation_full',{}),fl=rk.flags||{};
+  v.innerHTML='<h1 class="page">Quant · rankings · correlation</h1>';
+  const r=JC.el('div',{class:'cols',style:'grid-template-columns:1fr 1fr'});
+  const a=mod('Ranked: predicted profit','headline');a.b.classList.add('scroll');a.b.style.maxHeight='380px';a.b.innerHTML='<div id="bq-pp"></div>';
+  const b2=mod('Composite score','5-factor');b2.b.classList.add('scroll');b2.b.style.maxHeight='380px';b2.b.innerHTML='<div id="bq-sc"></div>';r.append(a.e,b2.e);v.append(r);
+  const r2=JC.el('div',{class:'cols',style:'grid-template-columns:1.2fr 1fr'});
+  const sc=mod('Conviction vs weight','score × NAV%');sc.b.innerHTML='<div id="bq-scatter"></div>';
+  const mm=mod('Risk metrics','vs S&P 500');mm.b.innerHTML=`<div class="cells">${[['P(profit)',mc.prob_profit!=null?mc.prob_profit+'%':'—',mc.prob_profit>=50?'pos':'neg'],['1Y VaR95',JC.moneyC(mc.var_95_1y),'neg'],['1Y CVaR',JC.moneyC(mc.cvar_95_1y),'neg'],['Up capt',JC.pctp(m.up_capture_pct)],['Dn capt',JC.pctp(m.down_capture_pct)],['Track err',JC.pctp(m.tracking_error_pct)],['Ulcer',JC.num(m.ulcer_index,1)],['Omega',JC.num(m.omega_ratio)],['Gain/Pain',JC.num(m.gain_to_pain)],['Tail',JC.num(m.tail_ratio)],['Batting',JC.pctp(m.batting_avg_pct)],['Diversif',JC.pctp(m.diversification_pct)]].map(c=>cell(c[0],c[1],c[2])).join('')}</div>`;r2.append(sc.e,mm.e);v.append(r2);
+  const r3=JC.el('div',{class:'cols',style:'grid-template-columns:1fr 1fr'});
+  const rf=mod('Risk flags');rf.b.classList.add('scroll');rf.b.style.maxHeight='260px';rf.b.innerHTML=(fl.risk||[]).slice(0,30).map(f=>`<div class="flag" onclick="location.hash='#/stock/${f.ticker}'"><span class="tk">${f.ticker}</span><span class="neg">${f.label}</span></div>`).join('')||'<div class="empty">none</div>';
+  const op=mod('Opportunity flags');op.b.classList.add('scroll');op.b.style.maxHeight='260px';op.b.innerHTML=(fl.opportunity||[]).slice(0,30).map(f=>`<div class="flag" onclick="location.hash='#/stock/${f.ticker}'"><span class="tk">${f.ticker}</span><span class="pos">${f.label}</span></div>`).join('')||'<div class="empty">none</div>';r3.append(rf.e,op.e);v.append(r3);
+  const cr=mod('Correlation matrix','top holdings · eff. holdings '+(co.effective_holdings||'—'));cr.b.classList.add('scroll');cr.b.innerHTML='<div id="bq-corr"></div>';v.append(cr.e);
+  setTimeout(()=>{
+    const byp=(rk.by_predicted_profit||[]).slice(0,14),mxp=Math.max(...byp.map(x=>x.predicted_profit_1y||0),1);
+    $('bq-pp').innerHTML=byp.map(s=>`<div class="flag" onclick="location.hash='#/stock/${s.ticker}'"><span class="tk">${s.ticker}</span><span class="bar-mini" style="flex:1;background:linear-gradient(90deg,${s.predicted_profit_1y>=0?'var(--green)':'var(--red)'} ${Math.abs(s.predicted_profit_1y||0)/mxp*100}%,transparent 0)"></span><span class="${JC.sgn(s.predicted_profit_1y)}" style="flex:0 0 56px;text-align:right">${JC.moneyC(s.predicted_profit_1y)}</span></div>`).join('');
+    const bys=(rk.by_score||[]).slice(0,14);
+    $('bq-sc').innerHTML=bys.map(s=>{const ss=s.subscores||{};return `<div class="flag" onclick="location.hash='#/stock/${s.ticker}'"><span class="tk">${s.ticker}</span><span style="flex:1;display:flex;gap:2px">${['momentum','risk_adjusted','trend','low_volatility','value'].map(k=>`<span title="${k}: ${ss[k]!=null?ss[k].toFixed(0):'—'}" style="flex:1;height:13px;background:${ss[k]!=null?JC.diverge((ss[k]-50)/50,'#dc3b40','#ece7da','#138a52'):'#ece7da'}"></span>`).join('')}</span><span style="margin-left:6px">${chip(s.score)}</span></div>`;}).join('');
+    JC.scatter($('bq-scatter'),(rk.scored||[]).filter(s=>s.score!=null).map(s=>({x:s.score,y:s.nav_pct||0,r:Math.max(3,Math.sqrt(s.market_value||0)/2),label:s.ticker,color:s.score>=70?'#138a52':s.score>=45?'#b9791a':'#dc3b40'})),Object.assign({height:300,xlab:'composite score',ylab:'NAV %',fmtY:v=>v.toFixed(1)+'%',xmid:50},COPT));
+    if(co.tickers&&co.tickers.length)JC.heatmap($('bq-corr'),{rows:co.tickers,cols:co.tickers,matrix:co.matrix},{cell:14,max:1,neg:'#dc3b40',mid:'#f4f1e9',pos:'#1f49ff',ink:'#6f6a5e',fmt:v=>v.toFixed(2)});
+  });
+}
+
+const REL=new Set(['t212_account','performance_overall','performance_quant','rankings','security_analytics','sector_exposure','correlation_full','performance_pies','config']);
+clock();
+JC.boot().then(()=>{chrome();route();JC.liveSubscribe(chrome,()=>{const pg=(location.hash.replace(/^#\//,'')||'overview').split('/')[0];if(['stock','pie'].includes(pg))return;route(true);},{slices:REL});}).catch(e=>{$('view').innerHTML=`<div class="empty">failed: ${e.message}</div>`;});
+window.addEventListener('hashchange',()=>route());let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>route(true),200);});
+</script>
+</body>
+</html>

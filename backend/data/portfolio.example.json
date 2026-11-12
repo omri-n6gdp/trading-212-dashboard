@@ -1,0 +1,78 @@
+{
+  "_comment": "Manual portfolio entries — used for Trading 212 ISA positions since there is no public API. Copy this to ~/.jarvis/portfolio.json and edit. Backend file-watches and reloads on change.",
+  "positions": [
+    {
+      "ticker": "VWRL",
+      "exchange": "LSE",
+      "asset_class": "equity_etf",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "GBP"
+    },
+    {
+      "ticker": "SMH",
+      "exchange": "LSE",
+      "asset_class": "equity_etf",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "GBP"
+    },
+    {
+      "ticker": "SGLP",
+      "exchange": "LSE",
+      "asset_class": "equity_etf",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "GBP"
+    },
+    {
+      "ticker": "VHYG",
+      "exchange": "LSE",
+      "asset_class": "equity_etf",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "GBP"
+    },
+    {
+      "ticker": "VFEG",
+      "exchange": "LSE",
+      "asset_class": "equity_etf",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "GBP"
+    },
+    {
+      "ticker": "RKLB",
+      "exchange": "NASDAQ",
+      "asset_class": "equity_single",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "USD"
+    },
+    {
+      "ticker": "LEU",
+      "exchange": "NYSE",
+      "asset_class": "equity_single",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "USD"
+    },
+    {
+      "ticker": "ESLT",
+      "exchange": "NASDAQ",
+      "asset_class": "equity_single",
+      "shares": 0,
+      "cost_basis": 0.0,
+      "currency": "USD"
+    }
+  ],
+  "polymarket_positions": [
+    {
+      "id": "example-market-id",
+      "question": "Example: Will SpaceX achieve Starship orbital catch in 2026?",
+      "side": "YES",
+      "entry_price": 0.0,
+      "size_pct_nav": 0.0
+    }
+  ]
+}

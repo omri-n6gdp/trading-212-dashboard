@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jarvis · Terminal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06080b; --bg1:#0a0f14; --bg2:#0e151c; --line:#16212a; --line2:#243340;
+  --ink:#e3ebf2; --dim:#8093a0; --faint:#4c5a66;
+  --cyan:#5ad1ff; --green:#6bf0a3; --red:#ff7a72; --gold:#ffce6b; --violet:#b48cff; --orange:#ff9b6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;line-height:1.45;font-feature-settings:'tnum' 1;
+  background-image:radial-gradient(1100px 560px at 12% -8%,rgba(90,209,255,.05),transparent 60%),radial-gradient(900px 500px at 95% 108%,rgba(180,140,255,.05),transparent 60%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background:repeating-linear-gradient(180deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:212px 1fr;min-height:100vh;position:relative;z-index:2}
+/* ---- sidebar ---- */
+.side{border-right:1px solid var(--line);background:linear-gradient(180deg,#0b1117,#070a0e);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:18px 0}
+.brand{padding:0 20px 18px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line)}
+.brand .j{font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:.5px;line-height:1}
+.brand .j b{color:var(--cyan)}
+.brand .s{font-size:8.5px;letter-spacing:.32em;color:var(--faint);text-transform:uppercase}
+.nav{padding:14px 12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 13px;border-radius:7px;color:var(--dim);font-size:12px;letter-spacing:.04em;transition:.15s;border:1px solid transparent}
+.nav a .ic{width:15px;height:15px;opacity:.8;stroke:currentColor;fill:none;stroke-width:1.6}
+.nav a:hover{color:var(--ink);background:rgba(90,209,255,.05)}
+.nav a.on{color:var(--ink);background:linear-gradient(90deg,rgba(90,209,255,.14),rgba(90,209,255,.02));border-color:rgba(90,209,255,.25)}
+.nav a.on .ic{opacity:1;color:var(--cyan)}
+.sidefoot{padding:14px 20px;border-top:1px solid var(--line);font-size:10px;color:var(--faint);display:flex;flex-direction:column;gap:7px}
+.live{display:flex;align-items:center;gap:7px;letter-spacing:.12em}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.4s infinite}
+.dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
+@keyframes pulse{50%{opacity:.4}}
+.sidefoot .sw{color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:6px 9px;text-align:center;letter-spacing:.14em;transition:.15s}
+.sidefoot .sw:hover{border-color:var(--line2);color:var(--ink)}
+/* ---- main ---- */
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:18px;padding:14px 26px;border-bottom:1px solid var(--line);background:rgba(8,12,16,.82);backdrop-filter:blur(10px)}
+.top .ttl{font-family:'Fraunces',serif;font-size:20px;font-weight:600}
+.top .crumb{color:var(--faint);font-size:11px;letter-spacing:.1em}
+.spacer{flex:1}
+.chip{display:flex;flex-direction:column;align-items:flex-end;padding:5px 14px;border-left:1px solid var(--line)}
+.chip .l{font-size:8.5px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase}
+.chip .v{font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+.clock{font-size:10px;color:var(--dim);letter-spacing:.16em;text-align:right}
+.view{padding:24px 26px 60px;max-width:1640px;width:100%}
+/* ---- panels & bits ---- */
+.grid{display:grid;gap:16px}
+.panel{border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#0a0f14,#070b0e);overflow:hidden;animation:rise .5s both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ph .t{font-family:'Fraunces',serif;font-size:15px;font-weight:600}
+.ph .t small{font-family:'JetBrains Mono';font-size:8.5px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;margin-left:9px;font-weight:400}
+.ph .meta{font-size:10px;color:var(--dim);letter-spacing:.08em}
+.pb{padding:16px}
+.pos{color:var(--green)} .neg{color:var(--red)} .flat{color:var(--dim)} .muted{color:var(--dim)} .faint{color:var(--faint)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.kpi{background:linear-gradient(180deg,#0b1117,#080c10);padding:13px 15px;min-height:74px;display:flex;flex-direction:column;justify-content:space-between}
+.kpi .l{font-size:8.5px;letter-spacing:.17em;color:var(--faint);text-transform:uppercase}
+.kpi .v{font-family:'Fraunces',serif;font-size:21px;font-weight:600;letter-spacing:-.5px}
+.kpi .sub{font-size:9.5px;color:var(--dim)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:1px;background:var(--line);border-radius:8px;overflow:hidden}
+.sb{background:linear-gradient(180deg,#0b1117,#080c10);padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-height:52px}
+.sb .l{font-size:8px;letter-spacing:.13em;color:var(--faint);text-transform:uppercase}
+.sb .v{font-family:'Fraunces',serif;font-size:16px;font-weight:600;line-height:1}
+.sb .s{font-size:8.5px;color:var(--dim)}
+.sect{font-size:8.5px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;margin:18px 0 9px;font-weight:500;border-bottom:1px solid var(--line);padding-bottom:5px}
+.sect:first-child{margin-top:0}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{font-size:8.5px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;text-align:right;padding:8px 9px;font-weight:500;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;position:sticky;top:0;background:#0a0f14}
+thead th:first-child{text-align:left}
+thead th.on{color:var(--cyan)}
+tbody td{padding:7px 9px;border-bottom:1px solid #0f161c;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child{text-align:left}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:rgba(90,209,255,.05)}
+.tk{font-weight:600} .tk small{color:var(--faint);font-size:8.5px;margin-left:6px;letter-spacing:.1em}
+.nm{color:var(--dim);font-size:9.5px;display:block;margin-top:1px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-block;font-size:8.5px;letter-spacing:.08em;padding:2px 7px;border-radius:20px;border:1px solid var(--line2);color:var(--dim)}
+.bar-mini{display:inline-block;height:5px;border-radius:3px;vertical-align:middle;margin-left:7px}
+.ctrls{display:flex;gap:7px;align-items:center}
+.ctrls input{background:#0a0f14;border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:11px;padding:6px 10px;border-radius:6px;outline:none;width:170px}
+.ctrls input:focus{border-color:var(--cyan)}
+.tabbtn{background:#0a0f14;border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:9px;letter-spacing:.12em;padding:5px 11px;border-radius:6px;cursor:pointer;text-transform:uppercase}
+.tabbtn.on{border-color:var(--cyan);color:var(--cyan)}
+.tabbtn:hover{color:var(--ink)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:var(--dim);margin-top:10px}
+.legend .li{display:flex;align-items:center;gap:6px}.legend .sw{width:14px;height:3px;border-radius:2px}
+.jc-tip{background:#0a0f14;border:1px solid var(--line2);color:var(--ink);box-shadow:0 6px 22px rgba(0,0,0,.5);font-family:'JetBrains Mono'}
+.cardgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
+.piecard{border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#0b1117,#070b0e);padding:15px;cursor:pointer;transition:.16s;display:flex;flex-direction:column;gap:10px}
+.piecard:hover{border-color:var(--line2);transform:translateY(-2px)}
+.piecard .hd{display:flex;justify-content:space-between;align-items:baseline}
+.piecard .hd .n{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
+.bignum{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-1px}
+.flash{animation:fl .8s ease-out}@keyframes fl{0%{color:var(--cyan)}100%{}}
+.scroll{overflow:auto}.scroll::-webkit-scrollbar{width:7px;height:7px}.scroll::-webkit-scrollbar-thumb{background:#1a242e;border-radius:3px}
+.flagrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #0f161c;font-size:11px}
+.flagrow .tk{flex:0 0 56px}
+.bardelta{height:5px;border-radius:3px}
+.note{font-size:10px;color:var(--faint);letter-spacing:.04em;line-height:1.5}
+.back{font-size:11px;color:var(--cyan);cursor:pointer;letter-spacing:.08em;display:inline-flex;gap:6px;align-items:center;margin-bottom:4px}
+.empty{color:var(--faint);text-align:center;padding:40px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="j">JARV<b>I</b>S</div><div class="s" id="brand-sub">Trading 212 · Live</div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot">
+      <div class="live"><span class="dot" id="livedot"></span><span id="livetxt">CONNECTING</span></div>
+      <div id="foot-val" class="faint">—</div>
+      <a class="sw" href="/">⇆ Switch design</a>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div><div class="ttl" id="pgttl">Overview</div><div class="crumb" id="pgcrumb"></div></div>
+      <div class="spacer"></div>
+      <div class="chip"><span class="l">Predicted 1Y profit</span><span class="v" id="chip-pred">—</span></div>
+      <div class="chip"><span class="l">Portfolio</span><span class="v accent" id="chip-val" style="color:var(--cyan)">—</span></div>
+      <div class="clock" id="clock"></div>
+    </header>
+    <div class="view" id="view"><div class="empty">Loading live portfolio…</div></div>
+  </main>
+</div>
+<script src="/static/jarvis-core.js"></script>
+<script>
+const PAL=['#5ad1ff','#b48cff','#ffce6b','#ff9b6b','#6bf0a3','#ff7a72','#7fe0e8','#c79bff','#9ad27a','#ff8fb1'];
+const COPT={grid:'#16212a',axis:'#5b6b78',ink:'#8093a0'};
+const ICON={overview:'M3 13h7V3H3zM14 21h7V3h-7zM3 21h7v-6H3z',pies:'M12 2a10 10 0 1 0 10 10H12z M12 2v10h10A10 10 0 0 0 12 2z',holdings:'M4 19V5m5 14V9m5 10V7m5 12V11',sectors:'M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z',quant:'M3 3v18h18M7 14l3-4 3 3 5-7'};
+const NAV=[['overview','Overview'],['pies','Pies'],['holdings','Holdings'],['sectors','Sectors'],['quant','Quant & Rankings']];
+const $=id=>document.getElementById(id);
+const g=(s,d)=>JC.get(s,d);
+let sortKey='nav_pct',sortDir=-1,filter='';
+
+function buildNav(){
+  $('nav').innerHTML=NAV.map(([k,l])=>`<a href="#/${k}" data-k="${k}"><svg class="ic" viewBox="0 0 24 24"><path d="${ICON[k]}"/></svg>${l}</a>`).join('');
+}
+function setActive(k){document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.k===k));}
+function panel(title,sub,meta){const p=JC.el('div',{class:'panel'});p.innerHTML=`<div class="ph"><div class="t">${title}${sub?`<small>${sub}</small>`:''}</div>${meta?`<div class="meta">${meta}</div>`:''}</div>`;const b=JC.el('div',{class:'pb'});p.append(b);return{p,b};}
+function sb(l,v,cls,s){return `<div class="sb"><div class="l">${l}</div><div class="v ${cls||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;}
+
+/* ---------------- top chrome ---------------- */
+function chrome(){
+  const rk=g('rankings',{}),acc=g('t212_account',{});
+  const pp=rk.portfolio_predicted_profit_1y, hv=rk.holdings_value||acc.total_value;
+  $('chip-pred').innerHTML = pp==null?'—':`<span class="${JC.sgn(pp)}">${JC.moneyC(pp)}</span>`;
+  $('chip-pred').className='v';
+  $('chip-val').textContent=JC.moneyC(acc.total_value);
+  $('foot-val').textContent=`${JC.money(acc.total_value)} · ${acc.positions||0} holdings`;
+  $('brand-sub').textContent=(g('config',{}).display_name)||'Trading 212 · Live';
+  const ok=JC.store.connected;$('livedot').className='dot'+(ok?'':' off');$('livetxt').textContent=ok?'LIVE':'OFFLINE';
+}
+function clock(){const n=new Date();$('clock').innerHTML=n.toISOString().slice(11,19)+' UTC';}
+setInterval(clock,1000);
+
+/* ---------------- router ---------------- */
+function route(live){
+  const h=location.hash.replace(/^#\//,'')||'overview';
+  const [page,arg]=h.split('/');
+  setActive(page);
+  const titles={overview:'Overview',pies:'Pies',holdings:'Holdings',sectors:'Sectors',quant:'Quant & Rankings',stock:'Holding',pie:'Pie'};
+  $('pgttl').textContent=titles[page]||'Overview';$('pgcrumb').textContent=arg?('· '+decodeURIComponent(arg)):'';
+  const v=$('view');const _sy=live?v.scrollTop:0;
+  try{
+    if(page==='overview')renderOverview(v);
+    else if(page==='pies')renderPies(v);
+    else if(page==='holdings')renderHoldings(v);
+    else if(page==='sectors')renderSectors(v);
+    else if(page==='quant')renderQuant(v);
+    else if(page==='stock')renderStock(v,decodeURIComponent(arg));
+    else if(page==='pie')renderPie(v,arg);
+    else renderOverview(v);
+  }catch(e){v.innerHTML=`<div class="empty">render error: ${e.message}</div>`;console.error(e);}
+  v.scrollTop=_sy;
+}
+
+/* ---------------- OVERVIEW ---------------- */
+let ovRange=0;
+function renderOverview(v){
+  const acc=g('t212_account',{}),perf=g('performance_overall',{}),st=perf.stats||{},q=g('performance_quant',{}),mc=q.monte_carlo||{},rk=g('rankings',{});
+  const bl=perf.benchmark_label||'S&P 500';
+  const pp=rk.portfolio_predicted_profit_1y, hv=rk.holdings_value||st.holdings_value;
+  v.innerHTML='';
+  // hero band
+  const hero=JC.el('div',{class:'grid',style:'grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:16px'});
+  const left=JC.el('div',{class:'panel'});
+  left.innerHTML=`<div class="ph"><div class="t">Predicted profit<small>monte carlo · 1Y · drift-tamed</small></div>
+    <div class="ctrls" id="ovr">${[['21','1M'],['63','3M'],['126','6M'],['0','1Y']].map(([r,l])=>`<button class="tabbtn ${(''+ovRange===r)?'on':''}" data-r="${r}">${l}</button>`).join('')}</div></div>
+    <div class="pb">
+      <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:6px">
+        <div><div class="faint" style="font-size:9px;letter-spacing:.18em;text-transform:uppercase">Expected 1Y profit</div>
+          <div class="bignum ${JC.sgn(pp)}" style="font-size:42px">${pp==null?'—':(pp>=0?'+':'')+JC.moneyC(pp)}</div>
+          <div class="muted" style="font-size:11px">on ${JC.money(hv)} held · ${mc.prob_profit!=null?`<span class="pos">${mc.prob_profit}% chance of profit</span>`:''} · drift ${mc.assumed_drift_pct!=null?mc.assumed_drift_pct+'%':'—'}</div></div>
+        <div style="flex:1;min-width:200px"><div class="statgrid" style="grid-template-columns:repeat(3,1fr)">
+          ${sb('Expected value',JC.moneyC((mc.terminal||{}).mean),'accent')}
+          ${sb('P95 best',JC.moneyC((mc.terminal||{}).p95),'pos',JC.pct((mc.terminal_ret||{}).p95,0))}
+          ${sb('P5 worst',JC.moneyC((mc.terminal||{}).p5),'neg',JC.pct((mc.terminal_ret||{}).p5,0))}
+        </div></div>
+      </div>
+      <div id="ov-fan"></div>
+    </div>`;
+  const right=JC.el('div',{class:'panel'});
+  right.innerHTML=`<div class="ph"><div class="t">Portfolio value<small>vs ${bl} · same cash</small></div></div><div class="pb"><div id="ov-curve"></div><div class="legend" id="ov-leg"></div></div>`;
+  hero.append(left,right);v.append(hero);
+
+  // KPIs
+  const k=JC.el('div',{class:'kpis',style:'margin-bottom:16px'});
+  const ret=acc.invested?acc.ppl/acc.invested*100:0;
+  k.innerHTML=[
+    ['Total value',JC.money(acc.total_value),'accent',(acc.positions||0)+' positions'],
+    ['Invested',JC.money(acc.invested),'','cost basis'],
+    ['Unrealised P&L',(acc.ppl>=0?'+':'')+JC.moneyC(acc.ppl),JC.sgn(acc.ppl),JC.pct(ret)],
+    ['Free cash',JC.money(acc.free_cash),'',JC.pctp(st.cash_pct)+' of total'],
+    ['vs '+bl,(st.vs_sp_gbp>=0?'ahead ':'behind ')+JC.moneyC(Math.abs(st.vs_sp_gbp||0)),JC.sgn(st.vs_sp_gbp),'same cash'],
+    ['Dividends',JC.money(acc.div_annualized),'gold','annualised'],
+    ['Net deposits',JC.money(acc.net_deposits),'','in − out'],
+    ['Sharpe',JC.num(st.sharpe),st.sharpe>=1?'pos':'','vol '+JC.pctp(st.vol_ann_pct)],
+  ].map(([l,val,c,s])=>`<div class="kpi"><div class="l">${l}</div><div class="v ${c==='accent'?'':c}" style="${c==='accent'?'color:var(--cyan)':c==='gold'?'color:var(--gold)':''}">${val}</div><div class="sub">${s}</div></div>`).join('');
+  v.append(k);
+
+  // lower: movers + sector mini + top predicted
+  const low=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr 1fr;gap:16px'});
+  const m1=panel('Top predicted profit','1Y · per holding');
+  const m2=panel('Momentum leaders','1 month');
+  const m3=panel('Exposure','by sector');
+  low.append(m1.p,m2.p,m3.p);v.append(low);
+  // fill
+  setTimeout(()=>{
+    const slice=arr=>ovRange>0&&arr.length>ovRange+1?arr.slice(arr.length-ovRange-1):arr;
+    const cur=slice(perf.curve||[]).map(p=>({t:p.t,y:p.v})), sp=slice(perf.sp_equiv||[]).map(p=>({t:p.t,y:p.v}));
+    JC.lineChart($('ov-curve'),[{name:'Portfolio',color:'#5ad1ff',points:cur,fill:true,width:2.2},sp.length?{name:bl,color:'#b48cff',points:sp,dash:'4 3',width:1.6}:null].filter(Boolean),Object.assign({height:230,fmtY:JC.moneyC},COPT));
+    $('ov-leg').innerHTML=`<div class="li"><span class="sw" style="background:#5ad1ff"></span>Portfolio</div><div class="li"><span class="sw" style="background:#b48cff"></span>${bl} (same cash)</div>`;
+    JC.fanChart($('ov-fan'),mc.fan||[],{height:210,color:'#5ad1ff',band1:'rgba(90,209,255,.10)',band2:'rgba(90,209,255,.22)',grid:COPT.grid,axis:COPT.axis});
+    const byp=(rk.by_predicted_profit||[]).slice(0,7);
+    m1.b.innerHTML=byp.map(s=>moverRow(s.ticker,s.name,JC.moneyC(s.predicted_profit_1y),s.predicted_profit_1y,Math.max(...byp.map(x=>x.predicted_profit_1y||0)),'→#/stock/'+s.ticker,s.prob_profit!=null?s.prob_profit+'%':'')).join('')||'<div class="empty">—</div>';
+    const lead=(g('performance_holdings',[])).filter(x=>x.ret_1m!=null).sort((a,b)=>b.ret_1m-a.ret_1m).slice(0,7);
+    m2.b.innerHTML=lead.map(s=>moverRow(s.ticker,s.name,JC.pct(s.ret_1m,1),s.ret_1m,Math.max(...lead.map(x=>Math.abs(x.ret_1m))),'→#/stock/'+s.ticker)).join('')||'<div class="empty">—</div>';
+    const sx=g('sector_exposure',{}).by_sector||[];
+    JC.bars(m3.b,sx.slice(0,7).map(s=>({label:s.label,pct:s.pct,value:s.value})),{colors:PAL,track:'#11181f',ink:'#cdd8e2',sub:'#7f8d99'});
+  });
+  $('ovr').onclick=e=>{if(e.target.dataset.r!=null){ovRange=+e.target.dataset.r;route();}};
+}
+function moverRow(tk,name,valTxt,val,maxAbs,href,extra){
+  const w=Math.min(70,Math.abs(val)/(maxAbs||1)*70),col=val>=0?'var(--green)':'var(--red)';
+  return `<div class="flagrow" onclick="location.hash='${(href||'').replace('→','')}'" style="cursor:pointer"><span class="tk" title="${name||''}">${tk}</span><span class="bar-mini" style="width:${w}px;background:${col}"></span><span class="${JC.sgn(val)}" style="margin-left:auto;font-variant-numeric:tabular-nums">${valTxt}</span>${extra?`<span class="faint" style="flex:0 0 38px;text-align:right">${extra}</span>`:''}</div>`;
+}
+
+/* ---------------- HOLDINGS ---------------- */
+const HCOLS=[['ticker','Ticker · Name',0],['sector','Sector',0],['nav_pct','NAV %',1],['return_pct','Return',1],['ppl','P&L',1],['vol_ann_pct','Vol',1],['sharpe','Sharpe',1],['momentum_12_1_pct','Mom 12-1',1],['score','Score',1],['predicted_profit_1y','Pred 1Y',1],['prob_profit','Prob',1]];
+function renderHoldings(v){
+  const{p,b}=panel('Holdings','quant on every position · click a row to drill in','');
+  p.querySelector('.ph').insertAdjacentHTML('beforeend',`<div class="ctrls"><input id="hfil" placeholder="filter ticker / name…" value="${filter}"><a class="tabbtn" href="/api/export/securities.csv">Export CSV</a></div>`);
+  b.style.padding='0';b.classList.add('scroll');b.style.maxHeight='calc(100vh - 220px)';
+  b.innerHTML='<table id="htbl"></table>';v.innerHTML='';v.append(p);
+  drawHoldings();
+  $('hfil').oninput=e=>{filter=e.target.value;drawHoldings();};
+}
+function drawHoldings(){
+  let rows=(g('security_analytics',[])).slice();
+  if(filter){const q=filter.toLowerCase();rows=rows.filter(r=>(r.ticker||'').toLowerCase().includes(q)||(r.name||'').toLowerCase().includes(q));}
+  rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];if(typeof x==='string')return sortDir*(''+y).localeCompare(''+x);return sortDir*(((y??-1e9))-((x??-1e9)));});
+  const maxNav=Math.max(...rows.map(r=>r.nav_pct||0),1);
+  const head=`<thead><tr>${HCOLS.map(([k,l])=>`<th data-k="${k}" class="${k===sortKey?'on':''}">${l}${k===sortKey?(sortDir<0?' ↓':' ↑'):''}</th>`).join('')}</tr></thead>`;
+  const body=rows.map(r=>`<tr onclick="location.hash='#/stock/${r.ticker}'">
+    <td><span class="tk">${r.ticker}</span><small>${r.exchange||''}</small><span class="nm">${r.name||''}</span></td>
+    <td class="muted" style="text-align:left">${r.sector||'—'}</td>
+    <td>${JC.pctp(r.nav_pct)}<span class="bar-mini" style="width:${(r.nav_pct/maxNav*42).toFixed(0)}px;background:rgba(90,209,255,.5)"></span></td>
+    <td class="${JC.sgn(r.return_pct)}">${JC.pct(r.return_pct)}</td>
+    <td class="${JC.sgn(r.ppl)}">${JC.moneyC(r.ppl)}</td>
+    <td class="gold" style="color:var(--gold)">${JC.pctp(r.vol_ann_pct)}</td>
+    <td class="${r.sharpe>=1?'pos':''}">${JC.num(r.sharpe)}</td>
+    <td class="${JC.sgn(r.momentum_12_1_pct)}">${JC.pct(r.momentum_12_1_pct,0)}</td>
+    <td>${scoreChip(r.score)}</td>
+    <td class="${JC.sgn(r.predicted_profit_1y)}">${JC.moneyC(r.predicted_profit_1y)}</td>
+    <td class="muted">${r.prob_profit!=null?r.prob_profit+'%':'—'}</td></tr>`).join('');
+  $('htbl').innerHTML=head+'<tbody>'+body+'</tbody>';
+  $('htbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k===sortKey)sortDir*=-1;else{sortKey=k;sortDir=(k==='ticker'||k==='sector')?1:-1;}drawHoldings();});
+}
+function scoreChip(s){if(s==null)return '—';const c=s>=70?'var(--green)':s>=45?'var(--gold)':'var(--red)';return `<span style="display:inline-block;min-width:30px;text-align:center;color:#06080b;background:${c};border-radius:5px;padding:1px 6px;font-weight:600">${s.toFixed(0)}</span>`;}
+
+/* ---------------- STOCK DRILL ---------------- */
+async function renderStock(v,tk){
+  v.innerHTML=`<div class="back" onclick="history.length>1?history.back():location.hash='#/holdings'">‹ back to holdings</div><div class="empty">loading ${tk}…</div>`;
+  let d;try{d=await JC.api('/api/stock/'+encodeURIComponent(tk));}catch(e){v.innerHTML='<div class="empty">failed to load</div>';return;}
+  if(d.error){v.innerHTML=`<div class="back" onclick="location.hash='#/holdings'">‹ back</div><div class="empty">${d.error}</div>`;return;}
+  const s=d.summary||{},pos=d.position||{},a=d.analyst||{},f=d.fundamentals||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<div class="back" onclick="location.hash='#/holdings'">‹ back to holdings</div>`;
+  const head=JC.el('div',{class:'panel',style:'margin-bottom:16px'});
+  head.innerHTML=`<div class="pb" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;align-items:flex-end">
+    <div><div class="bignum" style="font-size:30px">${pos.ticker||tk} <span class="muted" style="font-family:'JetBrains Mono';font-size:13px;font-weight:400">${pos.exchange||''}</span></div>
+      <div class="muted">${pos.name||''} ${f.sector?'· '+f.sector:''} ${f.industry?'· '+f.industry:''}</div>
+      ${d.note?`<div class="note" style="margin-top:6px">“${d.note}”</div>`:''}</div>
+    <div style="display:flex;gap:24px;text-align:right">
+      <div><div class="l faint" style="font-size:9px;letter-spacing:.16em">PRED 1Y PROFIT</div><div class="bignum ${JC.sgn(s.predicted_profit_1y)}" style="font-size:26px">${JC.moneyC(s.predicted_profit_1y)}</div><div class="muted">${s.prob_profit!=null?s.prob_profit+'% profit odds':''}</div></div>
+      <div><div class="l faint" style="font-size:9px;letter-spacing:.16em">P&L</div><div class="bignum ${JC.sgn(pos.ppl)}" style="font-size:26px">${JC.moneyC(pos.ppl)}</div><div class="muted">${JC.pct(pos.return_pct)} since buy</div></div>
+    </div></div>`;
+  v.append(head);
+  const row=JC.el('div',{class:'grid',style:'grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px'});
+  const pc=panel('Price · 1Y','adjusted close + 50/200 MA');pc.b.innerHTML='<div id="s-price"></div>';
+  const fan=panel('Monte Carlo','1Y forward · '+(mc.n_sims?mc.n_sims.toLocaleString()+' paths':''));fan.b.innerHTML='<div id="s-fan"></div>';
+  row.append(pc.p,fan.p);v.append(row);
+  // stats
+  const sp=panel('Analytics','trailing 1Y');
+  sp.b.innerHTML=`<div class="statgrid">
+    ${sb('CAGR',JC.pct(s.cagr_pct),JC.sgn(s.cagr_pct))}${sb('Volatility',JC.pctp(s.vol_ann_pct),'','ann.')}
+    ${sb('Sharpe',JC.num(s.sharpe),s.sharpe>=1?'pos':'')}${sb('Sortino',JC.num(s.sortino))}${sb('Beta',JC.num(s.beta),'','vs S&P')}
+    ${sb('Max DD',JC.pct(s.max_dd_pct),'neg')}${sb('Mom 12-1',JC.pct(s.momentum_12_1_pct,0),JC.sgn(s.momentum_12_1_pct))}
+    ${sb('52w range',JC.pctp(s.range_52w_pct),'','of band')}${sb('MA cross',s.ma_cross||'—',s.ma_cross==='golden'?'pos':s.ma_cross==='death'?'neg':'')}
+    ${sb('VaR 95%','-'+JC.pctp(s.var_95_pct),'neg','1-day')}${sb('Correlation',JC.num(s.correlation),'','vs S&P')}${sb('Win rate',JC.pctp(s.win_rate_pct),'accent')}</div>
+    <div class="sect">Analyst & fundamentals</div><div class="statgrid">
+    ${sb('Target',a.target_mean!=null?JC.num(a.target_mean,2):'—','accent',a.num_analysts?a.num_analysts+' analysts':'')}
+    ${sb('Implied upside',a.upside_pct!=null?JC.pct(a.upside_pct,0):'—',JC.sgn(a.upside_pct))}
+    ${sb('Rating',a.recommendation||'—','')}
+    ${sb('P/E',f.trailing_pe!=null?JC.num(f.trailing_pe,1):'—','')}
+    ${sb('Mkt cap',f.market_cap!=null?JC.moneyC(f.market_cap):'—','')}
+    ${sb('Div yield',f.dividend_yield!=null?JC.pctp(f.dividend_yield*100):'—','gold')}</div>`;
+  const dist=panel('Daily return distribution','vs normal');dist.b.innerHTML='<div id="s-hist"></div>';
+  const r2=JC.el('div',{class:'grid',style:'grid-template-columns:1.5fr 1fr;gap:16px'});r2.append(sp.p,dist.p);v.append(r2);
+  setTimeout(()=>{
+    const pcs=(d.price_curve||[]).map(p=>({t:p.t,y:p.px}));
+    const ma50=(d.ma50_line||[]).map(p=>({t:p.t,y:p.v})),ma200=(d.ma200_line||[]).map(p=>({t:p.t,y:p.v}));
+    JC.lineChart($('s-price'),[{name:pos.ticker||tk,color:'#5ad1ff',points:pcs,fill:true,width:2},ma50.length?{name:'50d',color:'#ffce6b',points:ma50,width:1.3}:null,ma200.length?{name:'200d',color:'#b48cff',points:ma200,width:1.3}:null].filter(Boolean),Object.assign({height:280,fmtY:v=>JC.num(v,2)},COPT));
+    JC.fanChart($('s-fan'),mc.fan||[],{height:280,color:'#6bf0a3',band1:'rgba(107,240,163,.10)',band2:'rgba(107,240,163,.22)',grid:COPT.grid,axis:COPT.axis});
+    JC.histogram($('s-hist'),d.histogram||{},{height:200,bar:'#5ad1ff',line:'#ffce6b',grid:COPT.grid,axis:COPT.axis});
+  });
+}
+
+/* ---------------- PIES ---------------- */
+function renderPies(v){
+  const pies=g('performance_pies',[]),tp=g('t212_pies',[]);
+  const byId={};tp.forEach(p=>byId[p.id]=p);
+  v.innerHTML='';
+  const top=JC.el('div',{class:'panel',style:'margin-bottom:16px'});
+  top.innerHTML=`<div class="ph"><div class="t">Pies<small>${pies.length} · quant + monte carlo each</small></div></div>`;
+  v.append(top);
+  const grid=JC.el('div',{class:'cardgrid'});
+  pies.sort((a,b)=>(b.current_value||0)-(a.current_value||0)).forEach(p=>{
+    const st=p.stats||{},meta=byId[p.id]||{};
+    const card=JC.el('div',{class:'piecard',onclick:()=>location.hash='#/pie/'+p.id});
+    card.innerHTML=`<div class="hd"><div class="n">${p.name||('Pie '+p.id)}</div><div class="faint">#${p.id}</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div><div class="faint" style="font-size:8.5px;letter-spacing:.16em">PRED 1Y PROFIT</div><div class="bignum ${JC.sgn(p.predicted_profit_1y)}" style="font-size:23px">${JC.moneyC(p.predicted_profit_1y)}</div></div>
+        <div style="text-align:right"><div class="faint" style="font-size:8.5px;letter-spacing:.16em">VALUE</div><div class="bignum" style="font-size:18px">${JC.moneyC(p.current_value)}</div></div></div>
+      <div id="pie-spark-${p.id}" style="height:42px"></div>
+      <div class="statgrid" style="grid-template-columns:repeat(4,1fr)">
+        ${sb('Return',JC.pct(p.result_pct,1),JC.sgn(p.result_pct))}${sb('Sharpe',JC.num(st.sharpe))}${sb('Max DD',JC.pctp(st.max_dd_pct),'neg')}${sb('Prob',p.prob_profit!=null?p.prob_profit+'%':'—','accent')}</div>
+      <div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--dim)"><span>${p.slice_count||0} slices · ${JC.pctp(p.contribution_pct)} of book</span><span>drift gap ${JC.pctp(p.rebalance_gap_pct)}</span></div>`;
+    grid.append(card);
+    setTimeout(()=>{const c=p.curve||[];if(c.length>1){const reb=c.map((x,i)=>({t:x.t,y:(x.v/(c[0].v||1)-1)*100}));JC.lineChart($('pie-spark-'+p.id),[{name:'',color:p.predicted_profit_1y>=0?'#6bf0a3':'#ff7a72',points:reb,fill:true,width:1.6}],{height:42,padL:2,padR:2,padT:4,padB:2,grid:'transparent',axis:'transparent',fmtY:()=>''});}});
+  });
+  v.append(grid);
+}
+async function renderPie(v,pid){
+  v.innerHTML=`<div class="back" onclick="location.hash='#/pies'">‹ back to pies</div><div class="empty">loading…</div>`;
+  let d;try{d=await JC.api('/api/pie/'+pid);}catch(e){v.innerHTML='<div class="empty">failed</div>';return;}
+  if(d.error){v.innerHTML=`<div class="back" onclick="location.hash='#/pies'">‹ back</div><div class="empty">${d.error}</div>`;return;}
+  const p=d.pie||{},st=d.stats||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<div class="back" onclick="location.hash='#/pies'">‹ back to pies</div>`;
+  const head=JC.el('div',{class:'panel',style:'margin-bottom:16px'});
+  head.innerHTML=`<div class="pb" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;align-items:flex-end">
+    <div><div class="bignum" style="font-size:28px">${p.name||('Pie '+p.id)}</div><div class="muted">${(d.slices||[]).length} slices · invested ${JC.money(p.invested)} · status ${p.status||'—'}</div></div>
+    <div style="display:flex;gap:22px;text-align:right">
+      <div><div class="faint" style="font-size:9px;letter-spacing:.16em">PRED 1Y PROFIT</div><div class="bignum ${JC.sgn(p.result_abs)}" style="font-size:24px">${JC.moneyC((mc.terminal||{}).mean!=null?(mc.terminal.mean-p.current_value):null)}</div><div class="muted">${mc.prob_profit!=null?mc.prob_profit+'% odds':''}</div></div>
+      <div><div class="faint" style="font-size:9px;letter-spacing:.16em">VALUE</div><div class="bignum" style="font-size:24px">${JC.moneyC(p.current_value)}</div><div class="${JC.sgn(p.result_pct)}">${JC.pct(p.result_pct)}</div></div>
+    </div></div>`;
+  v.append(head);
+  const row=JC.el('div',{class:'grid',style:'grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px'});
+  const cv=panel('Value curve','reconstructed · 1Y');cv.b.innerHTML='<div id="p-curve"></div>';
+  const fan=panel('Monte Carlo','1Y forward');fan.b.innerHTML='<div id="p-fan"></div>';
+  row.append(cv.p,fan.p);v.append(row);
+  const sp=panel('Analytics','');
+  sp.b.innerHTML=`<div class="statgrid">${sb('Total return',JC.pct(st.total_return_pct),JC.sgn(st.total_return_pct))}${sb('CAGR',JC.pct(st.cagr_pct),JC.sgn(st.cagr_pct))}${sb('Sharpe',JC.num(st.sharpe),st.sharpe>=1?'pos':'')}${sb('Sortino',JC.num(st.sortino))}${sb('Volatility',JC.pctp(st.vol_ann_pct),'gold')}${sb('Max DD',JC.pct(st.max_dd_pct),'neg')}${sb('VaR 95%','-'+JC.pctp(st.var_95_pct),'neg')}${sb('Beta',JC.num(st.beta))}</div>`;
+  const sl=panel('Holdings','expected vs current weight');sl.b.classList.add('scroll');sl.b.style.maxHeight='460px';sl.b.style.padding='0';
+  sl.b.innerHTML=`<table><thead><tr><th>Ticker</th><th>Sector</th><th>Expected</th><th>Current</th><th>Drift</th><th>Return</th></tr></thead><tbody>${(d.slices||[]).sort((a,b)=>b.current-a.current).map(s=>`<tr onclick="location.hash='#/stock/${s.ticker}'"><td class="tk">${s.ticker}</td><td class="muted" style="text-align:left">${s.sector||'—'}</td><td>${JC.pctp(s.expected)}</td><td>${JC.pctp(s.current)}</td><td class="${JC.sgn((s.current-s.expected))}">${JC.pct(s.current-s.expected,1)}</td><td class="${JC.sgn(s.result_pct)}">${JC.pct(s.result_pct,1)}</td></tr>`).join('')}</tbody></table>`;
+  const r2=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1.4fr;gap:16px'});r2.append(sp.p,sl.p);v.append(r2);
+  setTimeout(()=>{
+    const c=(d.curve||[]).map(x=>({t:x.t,y:x.v}));
+    JC.lineChart($('p-curve'),[{name:p.name,color:'#5ad1ff',points:c,fill:true,width:2}],Object.assign({height:260,fmtY:JC.moneyC},COPT));
+    JC.fanChart($('p-fan'),mc.fan||[],{height:260,color:'#b48cff',band1:'rgba(180,140,255,.10)',band2:'rgba(180,140,255,.22)',grid:COPT.grid,axis:COPT.axis});
+  });
+}
+
+/* ---------------- SECTORS ---------------- */
+function renderSectors(v){
+  const sx=g('sector_exposure',{});v.innerHTML='';
+  const tm=panel('Sector map','area = value · colour = predicted profit','HHI '+(sx.sector_hhi||'—'));
+  tm.b.innerHTML='<div id="sec-tree" style="height:300px"></div>';tm.p.style.marginBottom='16px';v.append(tm.p);
+  const row=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px'});
+  const a=panel('Sector exposure','% of holdings');a.b.innerHTML='<div id="sec-bars"></div>';
+  const b2=panel('Forward attribution','predicted 1Y profit by sector');b2.b.innerHTML='<div id="sec-attr"></div>';
+  row.append(a.p,b2.p);v.append(row);
+  const row2=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:16px'});
+  const th=panel('Thematic exposure','your tagged themes');th.b.innerHTML='<div id="sec-theme"></div>';
+  const gx=panel('Geography × sector','where the risk sits');gx.b.classList.add('scroll');gx.b.innerHTML='<div id="sec-geo"></div>';
+  row2.append(th.p,gx.p);v.append(row2);
+  setTimeout(()=>{
+    const secs=sx.by_sector||[];const maxpp=Math.max(...secs.map(s=>Math.abs(s.predicted_profit||0)),1);
+    JC.treemap($('sec-tree'),secs.map(s=>({label:s.label,value:s.value,sub:s,color:JC.diverge((s.predicted_profit||0)/maxpp,'#ff7a72','#243340','#6bf0a3')})),{height:300,ink:'#06080b',fmt:d=>d.label,fmt2:d=>JC.pctp(d.sub.pct)+' · '+JC.moneyC(d.sub.predicted_profit),tip:d=>`${JC.pctp(d.sub.pct)} · value ${JC.moneyC(d.value)} · pred ${JC.moneyC(d.sub.predicted_profit)}`});
+    JC.bars($('sec-bars'),secs.map(s=>({label:s.label,pct:s.pct,value:s.value})),{colors:PAL,track:'#11181f',ink:'#cdd8e2',sub:'#7f8d99'});
+    JC.bars($('sec-attr'),secs.slice().sort((a,b)=>(b.predicted_profit||0)-(a.predicted_profit||0)).map(s=>({label:s.label,pct:Math.abs(s.predicted_profit)/maxpp*100,value:s.predicted_profit,color:(s.predicted_profit>=0?'#6bf0a3':'#ff7a72')})),{track:'#11181f',ink:'#cdd8e2',sub:'#7f8d99',fmt:d=>JC.moneyC(d.value),showVal:false});
+    const th2=sx.by_theme||[];$('sec-theme').parentElement&&JC.bars($('sec-theme'),th2.length?th2.map(t=>({label:t.label,pct:t.pct,value:t.value})):[],{colors:['#b48cff','#5ad1ff','#ffce6b','#6bf0a3','#ff9b6b'],track:'#11181f',ink:'#cdd8e2',sub:'#7f8d99'});
+    if(!th2.length)$('sec-theme').innerHTML='<div class="note">No themes matched. Edit <b>~/.jarvis/jarvis.config.json</b> → thematic_tags.</div>';
+    const gs=sx.geo_sector;if(gs&&gs.geos&&gs.geos.length){JC.heatmap($('sec-geo'),{rows:gs.geos,cols:gs.sectors,matrix:gs.matrix},{cell:20,max:Math.max(...gs.matrix.flat(),1),scale:v=>JC.diverge(Math.min(1,v/Math.max(...gs.matrix.flat(),1)),'#0c1116','#0c1116','#5ad1ff'),fmt:v=>JC.moneyC(v),diagDim:false,ink:'#8093a0'});}
+  });
+}
+
+/* ---------------- QUANT & RANKINGS ---------------- */
+function renderQuant(v){
+  const rk=g('rankings',{}),q=g('performance_quant',{}),mc=q.monte_carlo||{},m=q.metrics||{},co=g('correlation_full',{}),fl=rk.flags||{};
+  v.innerHTML='';
+  // rank + score
+  const row=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px'});
+  const a=panel('Ranked by predicted profit','headline · 1Y');a.b.classList.add('scroll');a.b.style.maxHeight='420px';a.b.innerHTML='<div id="q-pp"></div>';
+  const b2=panel('Composite score','momentum · risk-adj · trend · low-vol · value');b2.b.classList.add('scroll');b2.b.style.maxHeight='420px';b2.b.innerHTML='<div id="q-score"></div>';
+  row.append(a.p,b2.p);v.append(row);
+  // scatter + MC metrics
+  const row2=JC.el('div',{class:'grid',style:'grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px'});
+  const sc=panel('Conviction vs weight','score vs NAV % — find under/over-weights');sc.b.innerHTML='<div id="q-scatter"></div>';
+  const mm=panel('Portfolio risk metrics','vs S&P 500');mm.b.innerHTML='';
+  row2.append(sc.p,mm.p);v.append(row2);
+  // flags + correlation
+  const row3=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px'});
+  const rf=panel('Risk flags','positions to watch');rf.b.classList.add('scroll');rf.b.style.maxHeight='300px';
+  const op=panel('Opportunity flags','');op.b.classList.add('scroll');op.b.style.maxHeight='300px';
+  rf.b.innerHTML=(fl.risk||[]).slice(0,30).map(f=>`<div class="flagrow" onclick="location.hash='#/stock/${f.ticker}'"><span class="tk">${f.ticker}</span><span class="neg" style="flex:1">${f.label}</span></div>`).join('')||'<div class="empty">none</div>';
+  op.b.innerHTML=(fl.opportunity||[]).slice(0,30).map(f=>`<div class="flagrow" onclick="location.hash='#/stock/${f.ticker}'"><span class="tk">${f.ticker}</span><span class="pos" style="flex:1">${f.label}</span></div>`).join('')||'<div class="empty">none</div>';
+  row3.append(rf.p,op.p);v.append(row3);
+  const cr=panel('Correlation','top holdings · 1Y daily returns','eff. holdings '+(co.effective_holdings||'—'));
+  cr.b.innerHTML='<div style="display:flex;gap:18px;flex-wrap:wrap"><div id="q-corr" class="scroll" style="max-width:62%"></div><div style="flex:1;min-width:220px" id="q-div"></div></div>';
+  v.append(cr.p);
+  setTimeout(()=>{
+    const byp=(rk.by_predicted_profit||[]).slice(0,14),maxp=Math.max(...byp.map(x=>x.predicted_profit_1y||0),1);
+    $('q-pp').innerHTML=byp.map(s=>`<div class="flagrow" onclick="location.hash='#/stock/${s.ticker}'"><span class="tk">${s.ticker}</span><span class="bardelta" style="width:${Math.max(2,(s.predicted_profit_1y||0)/maxp*150)}px;background:${s.predicted_profit_1y>=0?'var(--green)':'var(--red)'}"></span><span style="margin-left:auto" class="${JC.sgn(s.predicted_profit_1y)}">${JC.moneyC(s.predicted_profit_1y)}</span><span class="faint" style="flex:0 0 38px;text-align:right">${s.prob_profit!=null?s.prob_profit+'%':''}</span></div>`).join('');
+    const bys=(rk.by_score||[]).slice(0,14);
+    $('q-score').innerHTML=bys.map(s=>{const ss=s.subscores||{};return `<div class="flagrow" onclick="location.hash='#/stock/${s.ticker}'"><span class="tk">${s.ticker}</span><span style="flex:1;display:flex;gap:2px">${['momentum','risk_adjusted','trend','low_volatility','value'].map(k=>`<span title="${k} ${ss[k]!=null?ss[k].toFixed(0):'—'}" style="flex:1;height:14px;border-radius:2px;background:${ss[k]!=null?JC.diverge((ss[k]-50)/50,'#ff7a72','#243340','#6bf0a3'):'#11181f'}"></span>`).join('')}</span><span style="margin-left:8px">${scoreChip(s.score)}</span></div>`;}).join('');
+    const pts=(rk.scored||[]).filter(s=>s.score!=null).map(s=>({x:s.score,y:s.nav_pct||0,r:Math.max(3,Math.sqrt((s.market_value||0))/2),label:s.ticker,color:s.score>=70?'#6bf0a3':s.score>=45?'#ffce6b':'#ff7a72'}));
+    JC.scatter($('q-scatter'),pts,Object.assign({height:300,xlab:'composite score',ylab:'NAV %',fmtX:v=>v.toFixed(0),fmtY:v=>v.toFixed(1)+'%',xmid:50},COPT));
+    mm.b.innerHTML=`<div class="statgrid">${sb('Prob of profit',mc.prob_profit!=null?mc.prob_profit+'%':'—',mc.prob_profit>=50?'pos':'neg','1Y')}${sb('1Y VaR 95%',JC.moneyC(mc.var_95_1y),'neg')}${sb('1Y CVaR',JC.moneyC(mc.cvar_95_1y),'neg')}${sb('Info ratio',JC.num(m.information_ratio),JC.sgn(m.information_ratio))}${sb('Up capture',JC.pctp(m.up_capture_pct),m.up_capture_pct>=100?'pos':'')}${sb('Down capture',JC.pctp(m.down_capture_pct),m.down_capture_pct<=100?'pos':'neg')}${sb('Tracking err',JC.pctp(m.tracking_error_pct),'gold')}${sb('Ulcer index',JC.num(m.ulcer_index,1),'gold')}${sb('Omega',JC.num(m.omega_ratio),m.omega_ratio>=1?'pos':'')}${sb('Gain/Pain',JC.num(m.gain_to_pain))}${sb('Tail ratio',JC.num(m.tail_ratio))}${sb('Diversification',JC.pctp(m.diversification_pct),'accent')}</div>`;
+    if(co.tickers&&co.tickers.length){JC.heatmap($('q-corr'),{rows:co.tickers,cols:co.tickers,matrix:co.matrix},{cell:15,max:1,neg:'#ff5d52',mid:'#0c1116',pos:'#39d98a',ink:'#8093a0',fmt:v=>v.toFixed(2)});}
+    $('q-div').innerHTML=`<div class="sect">Diversification</div><div class="statgrid" style="grid-template-columns:1fr 1fr">${sb('Effective holdings',JC.num(co.effective_holdings,1),'accent','of '+(co.n_total||'—'))}${sb('Portfolio vol',JC.pctp(co.portfolio_vol_pct),'gold')}</div>
+      <div class="sect">Most diversifying pairs</div>${(co.pairs_div||[]).slice(0,5).map(p=>`<div class="flagrow"><span class="tk" style="flex:0 0 auto">${p.a}·${p.b}</span><span style="margin-left:auto" class="muted">${p.corr}</span></div>`).join('')}
+      <div class="sect">Adds most risk</div>${(co.marginal||[]).slice(0,5).map(p=>`<div class="flagrow" onclick="location.hash='#/stock/${p.ticker}'"><span class="tk">${p.ticker}</span><span style="margin-left:auto" class="${p.delta_vol_pct<0?'neg':'pos'}">${p.delta_vol_pct>0?'+':''}${p.delta_vol_pct}%</span></div>`).join('')}`;
+  });
+}
+
+/* ---------------- boot ---------------- */
+const REL=new Set(['t212_account','performance_overall','performance_quant','rankings','security_analytics','sector_exposure','correlation_full','performance_pies','config']);
+buildNav();clock();
+JC.boot().then(()=>{chrome();route();
+  JC.liveSubscribe(chrome,()=>{const page=(location.hash.replace(/^#\//,'')||'overview').split('/')[0];if(['stock','pie'].includes(page))return;route(true);},{slices:REL});
+}).catch(e=>{$('view').innerHTML=`<div class="empty">Failed to load: ${e.message}</div>`;});
+window.addEventListener('hashchange',()=>route());
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>route(true),200);});
+</script>
+</body>
+</html>

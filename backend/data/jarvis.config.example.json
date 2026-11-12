@@ -1,0 +1,41 @@
+{
+  "display_name": "My Portfolio",
+  "base_currency": null,
+  "benchmarks": [
+    { "symbol": "SPY", "label": "S&P 500", "currency": "USD" },
+    { "symbol": "VWRL.L", "label": "All-World", "currency": "GBP" }
+  ],
+  "primary_benchmark": "SPY",
+  "risk_free_rate": 0.04,
+  "monte_carlo": {
+    "horizon_days": 252,
+    "n_sims": 4000,
+    "engine": "bootstrap",
+    "seed": 7,
+    "gain_threshold_pct": 20,
+    "loss_threshold_pct": 20,
+    "drift_shrink": 0.45,
+    "drift_baseline": 0.05,
+    "drift_clip_lo": -0.35,
+    "drift_clip_hi": 0.40
+  },
+  "goal_value": null,
+  "ranking": {
+    "headline": "predicted_profit",
+    "score_weights": {
+      "momentum": 0.25,
+      "risk_adjusted": 0.25,
+      "trend": 0.20,
+      "low_volatility": 0.15,
+      "value": 0.15
+    }
+  },
+  "thematic_tags": {
+    "AI": ["NVDA", "MSFT", "GOOGL"],
+    "Semiconductors": ["NVDA", "AMD", "TSM"],
+    "Space": ["BA", "LMT"],
+    "Energy": ["XOM", "CVX"]
+  },
+  "notes": {},
+  "theme": "elevated"
+}

@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAUDE JARVIS · Algorithmic Trading Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #060a10;
+    --bg-1: #0a1017;
+    --bg-2: #0e1620;
+    --bg-3: #131e2a;
+    --border-0: #1a2532;
+    --border-1: #243140;
+    --border-2: #2f3e51;
+    --text-0: #d8e3ef;
+    --text-1: #a5b5c6;
+    --text-2: #6c7e92;
+    --text-3: #475669;
+    --green: #16d690;
+    --green-dim: #0d8c5e;
+    --red: #ff5572;
+    --red-dim: #b8364d;
+    --amber: #f5a623;
+    --amber-dim: #a36f15;
+    --cyan: #5fb3d4;
+    --cyan-dim: #3c7892;
+    --blue: #4a90e2;
+    --violet: #b794f4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; }
+  body {
+    background: var(--bg-0);
+    color: var(--text-0);
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 400;
+    overflow-x: hidden;
+    font-feature-settings: 'tnum' 1, 'ss01' 1;
+  }
+  ::selection { background: var(--cyan-dim); color: var(--text-0); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-1); }
+  ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 0; }
+
+  /* ============ HEADER ============ */
+  header {
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border-0);
+    padding: 8px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; letter-spacing: 0.08em;
+  }
+  .logo .mark {
+    width: 24px; height: 24px;
+    background: var(--text-0);
+    color: var(--bg-0);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+    border-radius: 2px;
+  }
+  .logo .name { color: var(--text-0); }
+  .logo .ver { color: var(--text-2); font-weight: 400; margin-left: 6px; }
+  .logo .build { color: var(--text-3); font-weight: 400; margin-left: 6px; }
+  .h-stats {
+    display: flex; gap: 18px; justify-content: center;
+    font-size: 11px;
+  }
+  .h-stats .it { display: flex; gap: 6px; align-items: center; }
+  .h-stats .it .l { color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .h-stats .it .v { color: var(--text-0); font-weight: 500; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.6s ease-in-out infinite; }
+  .dot.amber { background: var(--amber); }
+  .dot.red { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .h-right {
+    display: flex; gap: 18px; align-items: center;
+    color: var(--text-1); font-size: 11px;
+  }
+  .h-right .clock { color: var(--text-0); font-weight: 500; }
+  .h-right .user { color: var(--cyan); }
+
+  /* ============ HERO STRIP ============ */
+  .hero {
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border-0);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .hero-cell {
+    padding: 14px 18px;
+    border-right: 1px solid var(--border-0);
+    position: relative;
+  }
+  .hero-cell:last-child { border-right: none; }
+  .hero-cell .lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+  .hero-cell .val {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .hero-cell .sub {
+    font-size: 10px;
+    color: var(--text-2);
+    margin-top: 4px;
+    font-feature-settings: 'tnum' 1;
+  }
+  .hero-cell .sub .pos { color: var(--green); }
+  .hero-cell .sub .neg { color: var(--red); }
+
+  /* ============ MAIN GRID ============ */
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1px;
+    background: var(--border-0);
+  }
+  .col { background: var(--bg-0); display: flex; flex-direction: column; gap: 1px; }
+
+  /* ============ PANELS ============ */
+  .panel {
+    background: var(--bg-1);
+    border: 1px solid var(--border-0);
+    margin: 0;
+  }
+  .panel-head {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-0);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-2);
+  }
+  .panel-head .title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-0);
+    font-weight: 600;
+  }
+  .panel-head .title .pfx { color: var(--cyan); margin-right: 6px; }
+  .panel-head .meta {
+    font-size: 10px;
+    color: var(--text-2);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .panel-head .meta .badge {
+    background: var(--bg-3);
+    padding: 2px 6px;
+    border: 1px solid var(--border-1);
+    color: var(--text-1);
+  }
+  .panel-body { padding: 12px 14px; }
+
+  /* ============ EQUITY CURVE ============ */
+  .eq-wrap { padding: 14px; }
+  .eq-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin-bottom: 14px;
+  }
+  .eq-stats .it { }
+  .eq-stats .it .l {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-2); margin-bottom: 3px;
+  }
+  .eq-stats .it .v {
+    font-size: 16px; font-weight: 500; letter-spacing: -0.01em;
+  }
+  .eq-stats .it .d {
+    font-size: 10px; color: var(--text-2); margin-top: 2px;
+  }
+  .chart-svg {
+    width: 100%; height: 210px;
+    background: linear-gradient(180deg, transparent, var(--bg-2) 100%);
+  }
+  .chart-svg .grid-line { stroke: var(--border-0); stroke-width: 0.5; }
+  .chart-svg .axis-label { fill: var(--text-3); font-size: 9px; font-family: 'JetBrains Mono', monospace; }
+  .chart-svg .eq-line { fill: none; stroke: var(--green); stroke-width: 1.5; }
+  .chart-svg .eq-fill { fill: url(#eqGrad); opacity: 0.4; }
+  .chart-svg .bench-line { fill: none; stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; }
+  .chart-svg .last-dot { fill: var(--green); }
+  .chart-svg .last-pulse { fill: var(--green); opacity: 0.3; }
+
+  /* ============ RISK METRICS ============ */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border-0);
+  }
+  .metric-grid .m-cell {
+    padding: 10px 12px;
+    background: var(--bg-1);
+  }
+  .metric-grid .m-cell .l {
+    font-size: 9px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .metric-grid .m-cell .v {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-0);
+  }
+  .metric-grid .m-cell .ctx {
+    font-size: 9px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+
+  /* ============ TABLES ============ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  th {
+    text-align: left;
+    padding: 6px 10px 6px 14px;
+    font-size: 9px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border-0);
+  }
+  th.r, td.r { text-align: right; padding-right: 14px; }
+  th.c, td.c { text-align: center; }
+  td {
+    padding: 5px 10px 5px 14px;
+    border-bottom: 1px solid var(--border-0);
+    color: var(--text-0);
+    font-feature-settings: 'tnum' 1;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.row:hover td { background: var(--bg-2); }
+  .sym { font-weight: 500; color: var(--text-0); letter-spacing: 0.01em; }
+  .sym .x { color: var(--text-3); margin-left: 4px; font-size: 10px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--text-1); }
+  .amber { color: var(--amber); }
+  .cyan { color: var(--cyan); }
+  .dim { color: var(--text-2); }
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border: 1px solid var(--border-1);
+    color: var(--text-1);
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+  }
+  .tag.long { color: var(--green); border-color: var(--green-dim); }
+  .tag.short { color: var(--red); border-color: var(--red-dim); }
+  .flash-up { animation: fup 0.6s ease; }
+  .flash-dn { animation: fdn 0.6s ease; }
+  @keyframes fup { 0% { background: rgba(22, 214, 144, 0.25); } 100% { background: transparent; } }
+  @keyframes fdn { 0% { background: rgba(255, 85, 114, 0.22); } 100% { background: transparent; } }
+
+  /* sparkline */
+  .spark { width: 80px; height: 18px; vertical-align: middle; }
+  .spark path.line { fill: none; stroke-width: 1; }
+  .spark path.area { opacity: 0.18; stroke: none; }
+  .spark .last { r: 1.5; }
+
+  /* ============ ORDER TAPE ============ */
+  .tape-wrap {
+    height: 280px;
+    overflow: hidden;
+    position: relative;
+  }
+  .tape {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .tape .row {
+    display: grid;
+    grid-template-columns: 78px 60px 38px 80px 70px 1fr 60px;
+    padding: 3px 14px;
+    border-bottom: 1px solid var(--border-0);
+    gap: 8px;
+    align-items: center;
+  }
+  .tape .row.new { animation: fup 0.7s ease; }
+  .tape .ts { color: var(--text-3); font-size: 10px; }
+  .tape .ven { color: var(--text-2); font-size: 10px; }
+  .tape .side.B { color: var(--green); }
+  .tape .side.S { color: var(--red); }
+  .tape .strat { color: var(--cyan); font-size: 10px; }
+
+  /* ============ STRATEGY LIST ============ */
+  .strat-row {
+    display: grid;
+    grid-template-columns: 1fr auto 90px;
+    gap: 12px;
+    padding: 6px 14px;
+    border-bottom: 1px solid var(--border-0);
+    align-items: center;
+  }
+  .strat-row:last-child { border-bottom: none; }
+  .strat-row .name { font-size: 11px; color: var(--text-0); }
+  .strat-row .name .cat { color: var(--text-3); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .strat-row .pnl { font-size: 12px; font-weight: 500; min-width: 56px; text-align: right; }
+  .strat-row .bar-wrap { position: relative; height: 4px; background: var(--bg-3); border-radius: 0; }
+  .strat-row .bar { position: absolute; top: 0; bottom: 0; left: 0; background: var(--green); }
+  .strat-row .bar.neg { background: var(--red); }
+
+  /* ============ SIGNAL FEED ============ */
+  .feed { font-size: 11px; max-height: 280px; overflow-y: auto; }
+  .feed .item {
+    padding: 5px 14px;
+    border-bottom: 1px solid var(--border-0);
+    display: grid;
+    grid-template-columns: 60px 50px 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .feed .ts { color: var(--text-3); font-size: 10px; }
+  .feed .lvl { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; }
+  .feed .lvl.INFO { color: var(--cyan); }
+  .feed .lvl.SIG { color: var(--violet); }
+  .feed .lvl.RISK { color: var(--amber); }
+  .feed .lvl.EXEC { color: var(--green); }
+  .feed .lvl.WARN { color: var(--amber); }
+  .feed .lvl.HALT { color: var(--red); }
+  .feed .msg { color: var(--text-1); }
+  .feed .msg b { color: var(--text-0); font-weight: 500; }
+
+  /* ============ EXPOSURE BARS ============ */
+  .exp-wrap { padding: 12px 14px; }
+  .exp-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 9px;
+    font-size: 11px;
+  }
+  .exp-row:last-child { margin-bottom: 0; }
+  .exp-row .lbl { color: var(--text-1); }
+  .exp-row .bar-bg { height: 8px; background: var(--bg-3); position: relative; }
+  .exp-row .bar { position: absolute; top: 0; bottom: 0; left: 0; }
+  .exp-row .v { text-align: right; color: var(--text-0); font-weight: 500; }
+
+  /* ============ POLYMARKET ============ */
+  .pm-row {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-0);
+    font-size: 11px;
+  }
+  .pm-row:last-child { border-bottom: none; }
+  .pm-row .q {
+    color: var(--text-0);
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+  .pm-row .meta {
+    display: flex; justify-content: space-between;
+    color: var(--text-2); font-size: 10px;
+    margin-bottom: 4px;
+  }
+  .pm-row .bar {
+    height: 6px;
+    background: var(--bg-3);
+    position: relative;
+    overflow: hidden;
+  }
+  .pm-row .bar .yes {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    transition: width 0.4s;
+  }
+  .pm-row .pos-info {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--text-2);
+    margin-top: 4px;
+  }
+  .pm-row .pos-info .pnl { font-weight: 500; }
+
+  /* ============ CORRELATION HEATMAP ============ */
+  .corr-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(6, 1fr);
+    font-size: 10px;
+    padding: 10px 14px;
+  }
+  .corr-grid .h, .corr-grid .lbl {
+    color: var(--text-2);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 0;
+    text-align: center;
+  }
+  .corr-grid .lbl { text-align: left; }
+  .corr-grid .c {
+    padding: 6px 0;
+    text-align: center;
+    font-weight: 500;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--bg-1);
+    border-top: 1px solid var(--border-0);
+    padding: 6px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-2);
+  }
+  footer .it { display: flex; gap: 6px; align-items: center; }
+  footer .it .v { color: var(--text-1); font-weight: 500; }
+  footer .right { display: flex; gap: 18px; }
+
+  /* Responsive — at narrower widths, stack columns */
+  @media (max-width: 1280px) {
+    main { grid-template-columns: 1fr 1fr; }
+    .col-3 { grid-column: 1 / 3; }
+  }
+  @media (max-width: 880px) {
+    main { grid-template-columns: 1fr; }
+    .col-3 { grid-column: auto; }
+    .hero { grid-template-columns: repeat(3, 1fr); }
+    .hero-cell:nth-child(3n) { border-right: none; }
+    .h-stats { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="logo">
+    <span class="mark">CJ</span>
+    <span class="name">CLAUDE / JARVIS</span>
+    <span class="ver">v4.2.1</span>
+    <span class="build">build 2026.05.27</span>
+  </div>
+
+  <div class="h-stats">
+    <span class="it"><span class="dot live"></span> <span class="l">SYSTEM</span> <span class="v">ARMED</span></span>
+    <span class="it"><span class="l">LATENCY</span> <span class="v" id="hd-lat">14</span><span class="dim">ms</span></span>
+    <span class="it"><span class="l">FILL</span> <span class="v" id="hd-fill">99.4</span><span class="dim">%</span></span>
+    <span class="it"><span class="l">VENUES</span> <span class="v">7/7</span></span>
+    <span class="it"><span class="l">STRATS</span> <span class="v">9 ACTIVE</span></span>
+    <span class="it"><span class="l">UPTIME</span> <span class="v" id="hd-up">14d 03:21:14</span></span>
+  </div>
+
+  <div class="h-right">
+    <span><span class="dim">OP:</span> <span class="user">OMRI.LDN</span></span>
+    <span><span class="dim">LSE</span> <span id="hd-lse"></span></span>
+    <span class="clock" id="hd-clock"></span>
+  </div>
+</header>
+
+<!-- ============ HERO STRIP ============ -->
+<div class="hero">
+  <div class="hero-cell">
+    <div class="lbl">PORTFOLIO RETURN · MTD</div>
+    <div class="val pos" id="h-mtd">+12.47%</div>
+    <div class="sub">YTD <span class="pos" id="h-ytd">+34.18%</span> · ITD <span class="pos" id="h-itd">+89.42%</span></div>
+  </div>
+  <div class="hero-cell">
+    <div class="lbl">SHARPE / SORTINO / CALMAR</div>
+    <div class="val" id="h-sharpe">2.31 / 3.08 / 1.84</div>
+    <div class="sub">Rolling 90D · vs MSCI ACWI</div>
+  </div>
+  <div class="hero-cell">
+    <div class="lbl">WIN RATE · PROFIT FACTOR</div>
+    <div class="val"><span id="h-wr">54.2%</span> · <span id="h-pf">1.87</span></div>
+    <div class="sub">N=<span id="h-n">2,184</span> · avg trade <span class="pos" id="h-avg">+18 bps</span></div>
+  </div>
+  <div class="hero-cell">
+    <div class="lbl">MAX DRAWDOWN · CURRENT DD</div>
+    <div class="val"><span class="neg" id="h-mdd">-4.21%</span> · <span class="neg" id="h-cdd">-0.43%</span></div>
+    <div class="sub">Underwater 3D · recovery in 7D avg</div>
+  </div>
+  <div class="hero-cell">
+    <div class="lbl">VaR 95% · CVaR 95% · 1D</div>
+    <div class="val"><span class="amber" id="h-var">1.42%</span> · <span class="amber" id="h-cvar">2.18%</span></div>
+    <div class="sub">Realized vol (ann.) <span id="h-vol">11.4%</span></div>
+  </div>
+  <div class="hero-cell">
+    <div class="lbl">EXPOSURE · GROSS / NET</div>
+    <div class="val"><span id="h-gross">142%</span> · <span id="h-net">67%</span></div>
+    <div class="sub">Leverage <span id="h-lev">1.42x</span> · cash <span id="h-cash">38%</span></div>
+  </div>
+</div>
+
+<!-- ============ MAIN GRID ============ -->
+<main>
+
+<!-- ============ COL 1 ============ -->
+<div class="col">
+
+  <!-- EQUITY CURVE -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[01]</span>EQUITY CURVE · LIVE</div>
+      <div class="meta">
+        <span class="badge">5m</span>
+        <span class="badge">1H</span>
+        <span class="badge" style="border-color: var(--cyan-dim); color: var(--cyan);">1D</span>
+        <span class="badge">7D</span>
+        <span class="badge">30D</span>
+        <span class="badge">ALL</span>
+      </div>
+    </div>
+    <div class="eq-wrap">
+      <div class="eq-stats">
+        <div class="it">
+          <div class="l">NAV CHANGE</div>
+          <div class="v pos" id="eq-1d">+0.34%</div>
+          <div class="d">SESSION · since 00:00 UTC</div>
+        </div>
+        <div class="it">
+          <div class="l">ALPHA (ann.)</div>
+          <div class="v pos" id="eq-alpha">+8.21%</div>
+          <div class="d">vs MSCI ACWI · 90D</div>
+        </div>
+        <div class="it">
+          <div class="l">BETA · SPX</div>
+          <div class="v" id="eq-beta">0.34</div>
+          <div class="d">R² <span id="eq-r2">0.41</span> · low corr</div>
+        </div>
+        <div class="it">
+          <div class="l">INFO RATIO</div>
+          <div class="v" id="eq-ir">1.21</div>
+          <div class="d">Tracking err 6.8%</div>
+        </div>
+      </div>
+
+      <svg class="chart-svg" viewBox="0 0 640 210" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="eqGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#16d690" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#16d690" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- grid -->
+        <line class="grid-line" x1="0" y1="40" x2="640" y2="40"/>
+        <line class="grid-line" x1="0" y1="80" x2="640" y2="80"/>
+        <line class="grid-line" x1="0" y1="120" x2="640" y2="120"/>
+        <line class="grid-line" x1="0" y1="160" x2="640" y2="160"/>
+        <line class="grid-line" x1="160" y1="0" x2="160" y2="210"/>
+        <line class="grid-line" x1="320" y1="0" x2="320" y2="210"/>
+        <line class="grid-line" x1="480" y1="0" x2="480" y2="210"/>
+        <!-- axis labels -->
+        <text class="axis-label" x="4" y="42">+0.40%</text>
+        <text class="axis-label" x="4" y="82">+0.20%</text>
+        <text class="axis-label" x="4" y="122">0.00%</text>
+        <text class="axis-label" x="4" y="162">-0.20%</text>
+        <text class="axis-label" x="160" y="205" text-anchor="middle">06:00</text>
+        <text class="axis-label" x="320" y="205" text-anchor="middle">12:00</text>
+        <text class="axis-label" x="480" y="205" text-anchor="middle">18:00</text>
+        <!-- benchmark -->
+        <path id="benchPath" class="bench-line" d="M0,120"/>
+        <!-- fill -->
+        <path id="eqFill" class="eq-fill" d="M0,210 L0,120"/>
+        <!-- line -->
+        <path id="eqPath" class="eq-line" d="M0,120"/>
+        <!-- last marker -->
+        <circle id="lastPulse" class="last-pulse" cx="0" cy="120" r="5"/>
+        <circle id="lastDot" class="last-dot" cx="0" cy="120" r="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- RISK METRICS -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[02]</span>RISK · ROLLING 90D</div>
+      <div class="meta"><span class="dim">refresh 10s</span></div>
+    </div>
+    <div class="metric-grid">
+      <div class="m-cell"><div class="l">Volatility (ann.)</div><div class="v" id="m-vol">11.4%</div><div class="ctx">GARCH(1,1) fitted</div></div>
+      <div class="m-cell"><div class="l">Skew</div><div class="v" id="m-skew">−0.34</div><div class="ctx">left-tailed</div></div>
+      <div class="m-cell"><div class="l">Kurtosis</div><div class="v" id="m-kurt">3.41</div><div class="ctx">~mesokurtic</div></div>
+      <div class="m-cell"><div class="l">VaR 99% · 1D</div><div class="v amber" id="m-var99">2.18%</div><div class="ctx">historical · 252D</div></div>
+      <div class="m-cell"><div class="l">Expected shortfall</div><div class="v amber" id="m-es">2.84%</div><div class="ctx">CVaR @ 99%</div></div>
+      <div class="m-cell"><div class="l">Avg holding</div><div class="v" id="m-hold">4h 22m</div><div class="ctx">median 1h 18m</div></div>
+      <div class="m-cell"><div class="l">Turnover (1D)</div><div class="v" id="m-turn">38.2%</div><div class="ctx">of NAV</div></div>
+      <div class="m-cell"><div class="l">Kelly fraction</div><div class="v cyan" id="m-kelly">0.42</div><div class="ctx">half-Kelly applied</div></div>
+      <div class="m-cell"><div class="l">Treynor ratio</div><div class="v" id="m-trey">0.18</div><div class="ctx">excess / β</div></div>
+    </div>
+  </div>
+
+  <!-- EXPOSURE -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[03]</span>EXPOSURE BY ASSET CLASS</div>
+      <div class="meta"><span class="badge">% of NAV</span></div>
+    </div>
+    <div class="exp-wrap">
+      <div class="exp-row">
+        <div class="lbl">Equities/ETF</div>
+        <div class="bar-bg"><div class="bar" style="width: 38%; background: var(--cyan);"></div></div>
+        <div class="v">38.4%</div>
+      </div>
+      <div class="exp-row">
+        <div class="lbl">Crypto perps</div>
+        <div class="bar-bg"><div class="bar" style="width: 12%; background: var(--amber);"></div></div>
+        <div class="v">12.1%</div>
+      </div>
+      <div class="exp-row">
+        <div class="lbl">Options</div>
+        <div class="bar-bg"><div class="bar" style="width: 8%; background: var(--violet);"></div></div>
+        <div class="v">8.2%</div>
+      </div>
+      <div class="exp-row">
+        <div class="lbl">Polymarket</div>
+        <div class="bar-bg"><div class="bar" style="width: 3%; background: var(--green);"></div></div>
+        <div class="v">3.1%</div>
+      </div>
+      <div class="exp-row">
+        <div class="lbl">Cash / Tbills</div>
+        <div class="bar-bg"><div class="bar" style="width: 38%; background: var(--text-3);"></div></div>
+        <div class="v">38.2%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORRELATION HEATMAP -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[04]</span>PAIR CORRELATION · 60D</div>
+      <div class="meta"><span class="dim">Pearson · daily returns</span></div>
+    </div>
+    <div class="corr-grid" id="corrGrid"></div>
+  </div>
+
+</div>
+
+<!-- ============ COL 2 ============ -->
+<div class="col">
+
+  <!-- CRYPTO PERPS -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[05]</span>CRYPTO PERPS · LIVE</div>
+      <div class="meta"><span class="badge">HYPERLIQUID</span><span class="badge">BYBIT</span><span class="dim">funding 8h</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>SYMBOL</th>
+          <th class="r">MARK</th>
+          <th class="r">24H</th>
+          <th class="r">FUND</th>
+          <th class="r">OI</th>
+          <th class="r">POS</th>
+          <th class="c">CHART</th>
+        </tr>
+      </thead>
+      <tbody id="cryptoBody"></tbody>
+    </table>
+  </div>
+
+  <!-- OPTIONS -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[06]</span>OPTIONS BOOK</div>
+      <div class="meta"><span class="badge">IBKR</span><span class="dim">net Δ −0.14</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>CONTRACT</th>
+          <th class="r">IV / IVR</th>
+          <th class="r">Δ</th>
+          <th class="r">Γ</th>
+          <th class="r">Θ</th>
+          <th class="r">PnL</th>
+        </tr>
+      </thead>
+      <tbody id="optionsBody">
+        <tr class="row">
+          <td class="sym">SPY 28MAY 528C <span class="x">×4 long</span></td>
+          <td class="r" id="o-iv-1">14.2 / <span class="amber">62</span></td>
+          <td class="r" id="o-d-1">+0.62</td>
+          <td class="r dim">0.041</td>
+          <td class="r neg">−0.18</td>
+          <td class="r pos" id="o-pnl-1">+34 bps</td>
+        </tr>
+        <tr class="row">
+          <td class="sym">QQQ 30MAY 478P <span class="x">×3 long</span></td>
+          <td class="r" id="o-iv-2">17.8 / <span class="amber">74</span></td>
+          <td class="r" id="o-d-2">−0.41</td>
+          <td class="r dim">0.038</td>
+          <td class="r neg">−0.22</td>
+          <td class="r neg" id="o-pnl-2">−12 bps</td>
+        </tr>
+        <tr class="row">
+          <td class="sym">SMH 20JUN 280C <span class="x">×2 long</span></td>
+          <td class="r" id="o-iv-3">28.4 / <span class="amber">81</span></td>
+          <td class="r" id="o-d-3">+0.54</td>
+          <td class="r dim">0.024</td>
+          <td class="r neg">−0.31</td>
+          <td class="r pos" id="o-pnl-3">+87 bps</td>
+        </tr>
+        <tr class="row">
+          <td class="sym">RKLB 18JUL 22.5C <span class="x">×8 long</span></td>
+          <td class="r" id="o-iv-4">62.1 / <span class="red">94</span></td>
+          <td class="r" id="o-d-4">+0.71</td>
+          <td class="r dim">0.058</td>
+          <td class="r neg">−0.42</td>
+          <td class="r pos" id="o-pnl-4">+142 bps</td>
+        </tr>
+        <tr class="row">
+          <td class="sym">VIX 18JUN 18C <span class="x">×6 long (tail hedge)</span></td>
+          <td class="r" id="o-iv-5">82.3 / <span class="red">88</span></td>
+          <td class="r" id="o-d-5">+0.18</td>
+          <td class="r dim">0.012</td>
+          <td class="r neg">−0.51</td>
+          <td class="r neg" id="o-pnl-5">−24 bps</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- POLYMARKET -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[07]</span>POLYMARKET · ACTIVE POSITIONS</div>
+      <div class="meta"><span class="dim">8 active · vig 1.4%</span></div>
+    </div>
+    <div id="pmList">
+      <div class="pm-row" data-base="0.67" data-side="YES">
+        <div class="q">Will SpaceX achieve Starship orbital catch in 2026?</div>
+        <div class="meta"><span>Implied <span class="cyan" id="pm-p-1">67%</span></span><span>Vol $2.4M · 24H</span><span>Resolves Dec 31</span></div>
+        <div class="bar"><div class="yes" id="pm-bar-1" style="width: 67%;"></div></div>
+        <div class="pos-info"><span class="dim">Position <span class="tag long">YES</span> entry 0.54</span><span class="pos pnl" id="pm-pnl-1">+24.1%</span></div>
+      </div>
+      <div class="pm-row" data-base="0.42" data-side="NO">
+        <div class="q">Will the Fed cut rates 50bps+ by Sep 2026?</div>
+        <div class="meta"><span>Implied <span class="cyan" id="pm-p-2">42%</span></span><span>Vol $5.8M · 24H</span><span>Resolves Sep 18</span></div>
+        <div class="bar"><div class="yes" id="pm-bar-2" style="width: 42%;"></div></div>
+        <div class="pos-info"><span class="dim">Position <span class="tag short">NO</span> entry 0.51</span><span class="pos pnl" id="pm-pnl-2">+17.6%</span></div>
+      </div>
+      <div class="pm-row" data-base="0.71" data-side="YES">
+        <div class="q">Manchester City to win Premier League 25/26?</div>
+        <div class="meta"><span>Implied <span class="cyan" id="pm-p-3">71%</span></span><span>Vol $1.2M · 24H</span><span>Resolves May 31</span></div>
+        <div class="bar"><div class="yes" id="pm-bar-3" style="width: 71%;"></div></div>
+        <div class="pos-info"><span class="dim">Position <span class="tag long">YES</span> entry 0.62</span><span class="pos pnl" id="pm-pnl-3">+14.5%</span></div>
+      </div>
+      <div class="pm-row" data-base="0.34" data-side="YES">
+        <div class="q">Will NASA Artemis III launch before end of 2027?</div>
+        <div class="meta"><span>Implied <span class="cyan" id="pm-p-4">34%</span></span><span>Vol $890K · 24H</span><span>Resolves Dec 2027</span></div>
+        <div class="bar"><div class="yes" id="pm-bar-4" style="width: 34%;"></div></div>
+        <div class="pos-info"><span class="dim">Position <span class="tag long">YES</span> entry 0.41</span><span class="neg pnl" id="pm-pnl-4">−17.1%</span></div>
+      </div>
+      <div class="pm-row" data-base="0.58" data-side="YES">
+        <div class="q">BTC to close above $120k by Q3 2026?</div>
+        <div class="meta"><span>Implied <span class="cyan" id="pm-p-5">58%</span></span><span>Vol $3.1M · 24H</span><span>Resolves Sep 30</span></div>
+        <div class="bar"><div class="yes" id="pm-bar-5" style="width: 58%;"></div></div>
+        <div class="pos-info"><span class="dim">Position <span class="tag long">YES</span> entry 0.49</span><span class="pos pnl" id="pm-pnl-5">+18.4%</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ COL 3 ============ -->
+<div class="col">
+
+  <!-- EQUITIES / ETF -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[08]</span>EQUITIES / ETF · CORE + SATELLITES</div>
+      <div class="meta"><span class="badge">LSE</span><span class="badge">NASDAQ</span><span class="badge">NYSE</span></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>TICKER</th>
+          <th class="r">NAV%</th>
+          <th class="r">1D</th>
+          <th class="r">P&L</th>
+          <th class="c">CHART</th>
+        </tr>
+      </thead>
+      <tbody id="eqBody"></tbody>
+    </table>
+  </div>
+
+  <!-- STRATEGY PERFORMANCE -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[09]</span>STRATEGY P&L · MTD</div>
+      <div class="meta"><span class="dim">9 active · 100 library</span></div>
+    </div>
+    <div id="stratList"></div>
+  </div>
+
+  <!-- EXECUTION QUALITY -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="title"><span class="pfx">[10]</span>EXECUTION QUALITY · 24H</div>
+      <div class="meta"><span class="dim">vs midprice</span></div>
+    </div>
+    <div class="metric-grid">
+      <div class="m-cell"><div class="l">Avg slippage</div><div class="v pos" id="x-slip">+0.4 bps</div><div class="ctx">price improvement</div></div>
+      <div class="m-cell"><div class="l">Fill latency</div><div class="v" id="x-flat">18ms</div><div class="ctx">p50 · p99 41ms</div></div>
+      <div class="m-cell"><div class="l">Reject rate</div><div class="v" id="x-rej">0.08%</div><div class="ctx">412 sent</div></div>
+      <div class="m-cell"><div class="l">Taker / maker</div><div class="v" id="x-tm">38 / 62</div><div class="ctx">% of fills</div></div>
+      <div class="m-cell"><div class="l">Iceberg use</div><div class="v" id="x-ice">14%</div><div class="ctx">large orders</div></div>
+      <div class="m-cell"><div class="l">VWAP miss</div><div class="v" id="x-vwap">−0.6 bps</div><div class="ctx">avg vs arrival</div></div>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+<!-- ============ BOTTOM ROW: ORDER TAPE + SIGNAL FEED ============ -->
+<main style="grid-template-columns: 1.6fr 1fr;">
+  <div class="col">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="title"><span class="pfx">[11]</span>ORDER TAPE · FILLS</div>
+        <div class="meta">
+          <span class="dot live"></span>
+          <span class="dim">streaming · <span id="t-count">2,184</span> today</span>
+        </div>
+      </div>
+      <div class="tape-wrap">
+        <div class="tape" id="tape"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="title"><span class="pfx">[12]</span>SIGNAL · ENGINE LOG</div>
+        <div class="meta"><span class="dim">last 5 min</span></div>
+      </div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div style="display: flex; gap: 18px;">
+    <span class="it">© CLAUDE / JARVIS · for OMRI</span>
+    <span class="it"><span class="dim">node</span> <span class="v">ldn-1-a3</span></span>
+    <span class="it"><span class="dim">data</span> <span class="v">polygon · alpaca · hyperliquid · polymarket</span></span>
+    <span class="it"><span class="dim">engine</span> <span class="v">vectorbt-pro · fastapi</span></span>
+  </div>
+  <div class="right">
+    <span class="it"><span class="dim">MEM</span> <span class="v" id="f-mem">2.1GB</span></span>
+    <span class="it"><span class="dim">CPU</span> <span class="v" id="f-cpu">12%</span></span>
+    <span class="it"><span class="dim">WS</span> <span class="v pos">●</span> <span class="v">7/7</span></span>
+    <span class="it"><span class="dim">PAPER</span> <span class="v amber">SIM MODE</span></span>
+  </div>
+</footer>
+
+<script>
+/* ===================================================================
+   CLAUDE JARVIS · live data simulation
+   All numbers update at staggered intervals so nothing looks
+   synchronized. Random walks have realistic drift & volatility.
+=================================================================== */
+
+// ---------- utilities ----------
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const rng = (n=1) => (Math.random() - 0.5) * 2 * n;
+const fmt = (v, d=2, sign=true) => (sign && v >= 0 ? '+' : '') + v.toFixed(d);
+const fmtPct = (v, d=2) => fmt(v, d) + '%';
+const fmtBps = (v, d=0) => fmt(v, d) + ' bps';
+const fmtPrice = v => {
+  if (v >= 1000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (v >= 100) return v.toFixed(2);
+  if (v >= 10) return v.toFixed(3);
+  if (v >= 1) return v.toFixed(4);
+  return v.toFixed(5);
+};
+function flash(el, up) {
+  if (!el) return;
+  el.classList.remove('flash-up', 'flash-dn');
+  void el.offsetWidth;
+  el.classList.add(up ? 'flash-up' : 'flash-dn');
+}
+function setText(id, text, signed = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const prev = parseFloat(el.textContent.replace(/[^\d.-]/g, ''));
+  el.textContent = text;
+  const next = parseFloat(text.replace(/[^\d.-]/g, ''));
+  if (!isNaN(prev) && !isNaN(next) && prev !== next) flash(el, next > prev);
+}
+
+// ---------- clock ----------
+function tickClock() {
+  const d = new Date();
+  const utc = d.toISOString().slice(11, 19);
+  const ldn = d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour12: false });
+  $('#hd-clock').textContent = utc + ' UTC';
+  // London Stock Exchange hours: 08:00–16:30 London time, Mon–Fri
+  const ldnH = new Date(d.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+  const h = ldnH.getHours(), m = ldnH.getMinutes(), dow = ldnH.getDay();
+  const open = dow >= 1 && dow <= 5 && (h > 8 || (h === 8 && m >= 0)) && (h < 16 || (h === 16 && m < 30));
+  $('#hd-lse').innerHTML = open
+    ? '<span class="dot live" style="vertical-align: 0;"></span> OPEN'
+    : '<span class="dot amber" style="vertical-align: 0;"></span> CLOSED';
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ---------- uptime ----------
+let uptimeS = 14 * 86400 + 3 * 3600 + 21 * 60 + 14;
+setInterval(() => {
+  uptimeS++;
+  const d = Math.floor(uptimeS / 86400);
+  const h = Math.floor((uptimeS % 86400) / 3600);
+  const m = Math.floor((uptimeS % 3600) / 60);
+  const s = uptimeS % 60;
+  $('#hd-up').textContent = `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}, 1000);
+
+// ---------- equity curve ----------
+const eqPath = $('#eqPath');
+const eqFill = $('#eqFill');
+const benchPath = $('#benchPath');
+const lastDot = $('#lastDot');
+const lastPulse = $('#lastPulse');
+
+// 240 ticks across the day (one per ~6 min of session)
+const N = 240;
+const eqData = [];
+const benchData = [];
+let lastVal = 0; let lastBench = 0;
+const W = 640, H = 210;
+const yCenter = 120;
+const yScale = 200; // -0.20% to +0.40% across H
+
+for (let i = 0; i < N; i++) {
+  // realistic drift + small noise + intraday cycle
+  const drift = 0.0008;
+  const cycle = Math.sin(i / 22) * 0.03;
+  lastVal += drift + rng(0.025) + cycle * 0.05;
+  lastBench += rng(0.018) + Math.sin(i / 28) * 0.005;
+  eqData.push(lastVal);
+  benchData.push(lastBench);
+}
+
+function eqToPath(arr, areaFill = false) {
+  let d = '';
+  for (let i = 0; i < arr.length; i++) {
+    const x = (i / (N - 1)) * W;
+    const y = yCenter - arr[i] * yScale;
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  }
+  if (areaFill) {
+    d += `L${W},${H} L0,${H} Z`;
+  }
+  return d;
+}
+
+function renderEquity() {
+  eqPath.setAttribute('d', eqToPath(eqData));
+  eqFill.setAttribute('d', eqToPath(eqData, true));
+  benchPath.setAttribute('d', eqToPath(benchData));
+  const lastX = W;
+  const lastY = yCenter - eqData[eqData.length - 1] * yScale;
+  lastDot.setAttribute('cx', lastX); lastDot.setAttribute('cy', lastY);
+  lastPulse.setAttribute('cx', lastX); lastPulse.setAttribute('cy', lastY);
+}
+renderEquity();
+
+// extend the curve
+setInterval(() => {
+  const lastEq = eqData[eqData.length - 1];
+  const lastBn = benchData[benchData.length - 1];
+  const drift = 0.001;
+  eqData.push(lastEq + drift + rng(0.03));
+  benchData.push(lastBn + rng(0.022));
+  eqData.shift(); benchData.shift();
+  renderEquity();
+
+  // update intraday stat
+  const session = eqData[eqData.length - 1] * 100;
+  setText('eq-1d', (session >= 0 ? '+' : '') + session.toFixed(2) + '%');
+  $('#eq-1d').className = 'v ' + (session >= 0 ? 'pos' : 'neg');
+}, 2500);
+
+// pulse
+let pulseR = 5;
+setInterval(() => {
+  pulseR = pulseR === 5 ? 9 : 5;
+  lastPulse.setAttribute('r', pulseR);
+  lastPulse.style.opacity = pulseR === 5 ? 0.4 : 0.05;
+}, 800);
+
+// ---------- crypto perps ----------
+const cryptos = [
+  { sym: 'BTC-PERP',  mark: 68420.4, dayPct: 1.84, fund: 0.0124, oi: '2.41B', pos: 'LONG 0.8%', color: '#f7931a' },
+  { sym: 'ETH-PERP',  mark: 3514.82, dayPct: 2.12, fund: 0.0091, oi: '1.18B', pos: 'LONG 1.2%', color: '#627eea' },
+  { sym: 'SOL-PERP',  mark: 168.34,  dayPct: 3.47, fund: 0.0218, oi: '482M',  pos: 'LONG 0.6%', color: '#14f195' },
+  { sym: 'HYPE-PERP', mark: 28.41,   dayPct: -1.24, fund: 0.0042, oi: '184M',  pos: '— flat',   color: '#97fce4' },
+  { sym: 'DOGE-PERP', mark: 0.1842,  dayPct: -2.84, fund: -0.0021, oi: '218M', pos: 'SHORT 0.3%',color: '#c2a633' },
+  { sym: 'BNB-PERP',  mark: 612.4,   dayPct: 0.84, fund: 0.0064, oi: '342M',  pos: '— flat',   color: '#f0b90b' },
+];
+function genSpark(seed, color, len = 30) {
+  const pts = [];
+  let v = 0;
+  for (let i = 0; i < len; i++) {
+    v += rng(1) + seed * 0.05;
+    pts.push(v);
+  }
+  const min = Math.min(...pts), max = Math.max(...pts);
+  const range = max - min || 1;
+  let d = '';
+  for (let i = 0; i < pts.length; i++) {
+    const x = (i / (len - 1)) * 80;
+    const y = 16 - ((pts[i] - min) / range) * 14;
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  }
+  const lastX = 80;
+  const lastY = 16 - ((pts[pts.length-1] - min) / range) * 14;
+  const trend = pts[pts.length-1] > pts[0];
+  const c = trend ? 'var(--green)' : 'var(--red)';
+  return `<svg class="spark" viewBox="0 0 80 18">
+    <path class="line" d="${d}" stroke="${c}"/>
+    <path class="area" d="${d} L80,18 L0,18 Z" fill="${c}"/>
+    <circle class="last" cx="${lastX}" cy="${lastY.toFixed(1)}" fill="${c}"/>
+  </svg>`;
+}
+function renderCryptos() {
+  const tb = $('#cryptoBody');
+  tb.innerHTML = cryptos.map((c, i) => {
+    const dayCls = c.dayPct >= 0 ? 'pos' : 'neg';
+    const fundCls = c.fund >= 0 ? 'pos' : 'neg';
+    const posCls = c.pos.startsWith('LONG') ? 'long' : c.pos.startsWith('SHORT') ? 'short' : '';
+    return `
+      <tr class="row">
+        <td class="sym">${c.sym}</td>
+        <td class="r" id="cr-mk-${i}">${fmtPrice(c.mark)}</td>
+        <td class="r ${dayCls}" id="cr-dp-${i}">${fmt(c.dayPct, 2)}%</td>
+        <td class="r ${fundCls}" id="cr-fd-${i}">${fmt(c.fund * 100, 4)}%</td>
+        <td class="r dim">${c.oi}</td>
+        <td class="r"><span class="tag ${posCls}">${c.pos}</span></td>
+        <td class="c">${genSpark(c.dayPct, '')}</td>
+      </tr>`;
+  }).join('');
+}
+renderCryptos();
+
+// update crypto marks
+setInterval(() => {
+  cryptos.forEach((c, i) => {
+    const vol = c.sym.startsWith('BTC') ? 0.0008 : c.sym.startsWith('ETH') ? 0.0012 : 0.0022;
+    const drift = rng(1) * vol;
+    const newMark = c.mark * (1 + drift);
+    const up = newMark > c.mark;
+    c.mark = newMark;
+    c.dayPct += drift * 100;
+    setText(`cr-mk-${i}`, fmtPrice(c.mark));
+    setText(`cr-dp-${i}`, fmt(c.dayPct, 2) + '%');
+    const dpEl = document.getElementById(`cr-dp-${i}`);
+    if (dpEl) dpEl.className = 'r ' + (c.dayPct >= 0 ? 'pos' : 'neg');
+  });
+}, 1100);
+
+// re-render sparklines occasionally
+setInterval(() => {
+  $$('#cryptoBody tr').forEach((tr, i) => {
+    const cell = tr.children[6];
+    if (cell) cell.innerHTML = genSpark(cryptos[i].dayPct, '');
+  });
+}, 5400);
+
+// update funding less often
+setInterval(() => {
+  cryptos.forEach((c, i) => {
+    c.fund += rng(0.0008);
+    c.fund = Math.max(-0.05, Math.min(0.05, c.fund));
+    const el = document.getElementById(`cr-fd-${i}`);
+    if (el) {
+      el.textContent = fmt(c.fund * 100, 4) + '%';
+      el.className = 'r ' + (c.fund >= 0 ? 'pos' : 'neg');
+    }
+  });
+}, 8400);
+
+// ---------- equities ----------
+const equities = [
+  { tic: 'VWRL', name: 'Vanguard FTSE All-World', nav: 14.2, day: 0.42 },
+  { tic: 'SMH',  name: 'VanEck Semiconductor',    nav: 6.8, day: 1.84 },
+  { tic: 'SGLP', name: 'iShares Gold Producers',  nav: 3.4, day: 0.84 },
+  { tic: 'VHYG', name: 'Vanguard High Div Yield', nav: 2.4, day: -0.21 },
+  { tic: 'VFEG', name: 'Vanguard EM',             nav: 2.1, day: -0.62 },
+  { tic: 'RKLB', name: 'Rocket Lab USA',          nav: 3.2, day: 3.42 },
+  { tic: 'LEU',  name: 'Centrus Energy',          nav: 1.4, day: 2.14 },
+  { tic: 'ESLT', name: 'Elbit Systems',           nav: 1.2, day: 0.18 },
+  { tic: 'FRO',  name: 'Frontline Tankers',       nav: 0.8, day: -1.42 },
+  { tic: 'DHT',  name: 'DHT Holdings',            nav: 0.4, day: -0.84 },
+  { tic: 'ASTS', name: 'AST SpaceMobile',         nav: 0.6, day: 4.21 },
+  { tic: 'LUNR', name: 'Intuitive Machines',      nav: 0.4, day: 2.84 },
+  { tic: 'SERV', name: 'Serve Robotics',          nav: 0.3, day: -2.14 },
+  { tic: 'OPRA', name: 'Opera Ltd',               nav: 0.2, day: 1.21 },
+];
+function renderEquities() {
+  const tb = $('#eqBody');
+  tb.innerHTML = equities.map((e, i) => {
+    const dCls = e.day >= 0 ? 'pos' : 'neg';
+    return `
+      <tr class="row">
+        <td class="sym">${e.tic}<span class="x">${e.name}</span></td>
+        <td class="r">${e.nav.toFixed(1)}%</td>
+        <td class="r ${dCls}" id="eq-d-${i}">${fmt(e.day, 2)}%</td>
+        <td class="r ${dCls}" id="eq-p-${i}">${fmt(e.day * 4.2, 0)} bps</td>
+        <td class="c">${genSpark(e.day, '')}</td>
+      </tr>`;
+  }).join('');
+}
+renderEquities();
+setInterval(() => {
+  equities.forEach((e, i) => {
+    e.day += rng(0.06);
+    const el = document.getElementById(`eq-d-${i}`);
+    const pel = document.getElementById(`eq-p-${i}`);
+    if (el) {
+      el.textContent = fmt(e.day, 2) + '%';
+      el.className = 'r ' + (e.day >= 0 ? 'pos' : 'neg');
+    }
+    if (pel) {
+      pel.textContent = fmt(e.day * 4.2, 0) + ' bps';
+      pel.className = 'r ' + (e.day >= 0 ? 'pos' : 'neg');
+    }
+  });
+}, 1600);
+
+setInterval(() => {
+  $$('#eqBody tr').forEach((tr, i) => {
+    const cell = tr.children[4];
+    if (cell) cell.innerHTML = genSpark(equities[i].day, '');
+  });
+}, 6200);
+
+// ---------- strategies ----------
+const strategies = [
+  { name: 'Liquidity sweep',  cat: 'SMC',          pnl: 3.42 },
+  { name: 'ICT fair-value gap', cat: 'SMC',       pnl: 4.18 },
+  { name: 'Order block', cat: 'SMC',              pnl: 2.18 },
+  { name: 'EMA-9/21 momentum', cat: 'TREND',      pnl: 2.84 },
+  { name: 'Z-score mean reversion', cat: 'MR',    pnl: 1.42 },
+  { name: 'ATR breakout', cat: 'BREAKOUT',        pnl: -0.82 },
+  { name: 'Pairs (FRO / INSW)', cat: 'STAT-ARB',  pnl: 1.21 },
+  { name: 'Vol-risk premium', cat: 'OPTIONS',     pnl: 2.14 },
+  { name: 'News-sentiment delta', cat: 'NLP',     pnl: 0.68 },
+];
+function renderStrats() {
+  const max = Math.max(...strategies.map(s => Math.abs(s.pnl)));
+  $('#stratList').innerHTML = strategies.map((s, i) => {
+    const cls = s.pnl >= 0 ? 'pos' : 'neg';
+    const w = (Math.abs(s.pnl) / max) * 100;
+    return `
+      <div class="strat-row">
+        <div class="name">${s.name}<br><span class="cat">${s.cat}</span></div>
+        <div class="pnl ${cls}" id="st-${i}">${fmt(s.pnl, 2)}%</div>
+        <div class="bar-wrap"><div class="bar ${s.pnl < 0 ? 'neg' : ''}" style="width: ${w}%;"></div></div>
+      </div>`;
+  }).join('');
+}
+renderStrats();
+setInterval(() => {
+  strategies.forEach((s, i) => {
+    s.pnl += rng(0.06);
+    const el = document.getElementById(`st-${i}`);
+    if (el) {
+      el.textContent = fmt(s.pnl, 2) + '%';
+      el.className = 'pnl ' + (s.pnl >= 0 ? 'pos' : 'neg');
+    }
+  });
+}, 3200);
+
+// ---------- polymarket ----------
+const pmBase = [0.67, 0.42, 0.71, 0.34, 0.58];
+const pmEntry = [0.54, 0.51, 0.62, 0.41, 0.49];
+const pmSide = ['YES', 'NO', 'YES', 'YES', 'YES'];
+const pmCur = [...pmBase];
+setInterval(() => {
+  pmCur.forEach((p, i) => {
+    pmCur[i] = Math.max(0.02, Math.min(0.98, p + rng(0.008)));
+    const pct = Math.round(pmCur[i] * 100);
+    const pe = document.getElementById(`pm-p-${i + 1}`);
+    if (pe) pe.textContent = pct + '%';
+    const be = document.getElementById(`pm-bar-${i + 1}`);
+    if (be) be.style.width = pct + '%';
+    // PnL: (current - entry) / entry if YES; (entry - current) / entry if NO; but since these are prob, just %
+    let pnl;
+    if (pmSide[i] === 'YES') pnl = ((pmCur[i] - pmEntry[i]) / pmEntry[i]) * 100;
+    else pnl = ((pmEntry[i] - pmCur[i]) / pmEntry[i]) * 100;
+    const pn = document.getElementById(`pm-pnl-${i + 1}`);
+    if (pn) {
+      pn.textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(1) + '%';
+      pn.className = (pnl >= 0 ? 'pos' : 'neg') + ' pnl';
+    }
+  });
+}, 2200);
+
+// ---------- options ----------
+const optMid = [
+  { iv: 14.2, ivr: 62, d: 0.62, pnl: 34 },
+  { iv: 17.8, ivr: 74, d: -0.41, pnl: -12 },
+  { iv: 28.4, ivr: 81, d: 0.54, pnl: 87 },
+  { iv: 62.1, ivr: 94, d: 0.71, pnl: 142 },
+  { iv: 82.3, ivr: 88, d: 0.18, pnl: -24 }
+];
+setInterval(() => {
+  optMid.forEach((o, i) => {
+    o.iv += rng(0.18);
+    o.d += rng(0.02);
+    o.d = Math.max(-1, Math.min(1, o.d));
+    o.pnl += rng(4);
+    const idx = i + 1;
+    const ivEl = document.getElementById(`o-iv-${idx}`);
+    if (ivEl) {
+      const ivrColor = o.ivr > 80 ? 'red' : o.ivr > 50 ? 'amber' : 'pos';
+      ivEl.innerHTML = `${o.iv.toFixed(1)} / <span class="${ivrColor}">${o.ivr}</span>`;
+    }
+    const dEl = document.getElementById(`o-d-${idx}`);
+    if (dEl) dEl.textContent = (o.d >= 0 ? '+' : '') + o.d.toFixed(2);
+    const pnEl = document.getElementById(`o-pnl-${idx}`);
+    if (pnEl) {
+      pnEl.textContent = (o.pnl >= 0 ? '+' : '') + Math.round(o.pnl) + ' bps';
+      pnEl.className = 'r ' + (o.pnl >= 0 ? 'pos' : 'neg');
+    }
+  });
+}, 2800);
+
+// ---------- hero strip ----------
+let h_mtd = 12.47, h_ytd = 34.18, h_itd = 89.42, h_cdd = -0.43, h_session = 0;
+let h_wr = 54.2, h_pf = 1.87, h_n = 2184, h_avg = 18;
+let h_var = 1.42, h_cvar = 2.18, h_vol = 11.4;
+let h_gross = 142, h_net = 67, h_lev = 1.42, h_cash = 38;
+
+setInterval(() => {
+  h_session += rng(0.03);
+  h_mtd += rng(0.012);
+  h_ytd += rng(0.014);
+  h_itd += rng(0.018);
+  h_cdd = Math.min(0, h_cdd + rng(0.04));
+  setText('h-mtd', (h_mtd >= 0 ? '+' : '') + h_mtd.toFixed(2) + '%');
+  setText('h-ytd', (h_ytd >= 0 ? '+' : '') + h_ytd.toFixed(2) + '%');
+  setText('h-itd', (h_itd >= 0 ? '+' : '') + h_itd.toFixed(2) + '%');
+  setText('h-cdd', h_cdd.toFixed(2) + '%');
+}, 3000);
+setInterval(() => {
+  h_n += Math.random() > 0.5 ? 1 : 0;
+  h_avg += rng(0.4);
+  h_pf += rng(0.02);
+  h_wr += rng(0.08);
+  setText('h-n', h_n.toLocaleString());
+  setText('h-avg', (h_avg >= 0 ? '+' : '') + Math.round(h_avg) + ' bps');
+  setText('h-pf', h_pf.toFixed(2));
+  setText('h-wr', h_wr.toFixed(1) + '%');
+}, 4500);
+setInterval(() => {
+  h_var += rng(0.04);
+  h_cvar += rng(0.05);
+  h_vol += rng(0.08);
+  h_var = Math.max(0.5, Math.min(4, h_var));
+  h_cvar = Math.max(0.5, Math.min(5, h_cvar));
+  h_vol = Math.max(6, Math.min(18, h_vol));
+  setText('h-var', h_var.toFixed(2) + '%');
+  setText('h-cvar', h_cvar.toFixed(2) + '%');
+  setText('h-vol', h_vol.toFixed(1) + '%');
+}, 5800);
+
+// ---------- header stats ----------
+setInterval(() => {
+  const lat = 12 + Math.floor(Math.random() * 14);
+  setText('hd-lat', lat);
+  const fill = 99 + Math.random() * 0.99;
+  setText('hd-fill', fill.toFixed(1));
+}, 1400);
+
+// ---------- risk panel ----------
+setInterval(() => {
+  setText('m-vol', (10.8 + Math.random() * 1.4).toFixed(1) + '%');
+  setText('m-var99', (1.9 + Math.random() * 0.5).toFixed(2) + '%');
+  setText('m-es', (2.6 + Math.random() * 0.5).toFixed(2) + '%');
+  setText('m-skew', '−' + (0.25 + Math.random() * 0.2).toFixed(2));
+  setText('m-kurt', (3.2 + Math.random() * 0.5).toFixed(2));
+  setText('m-turn', (35 + Math.random() * 8).toFixed(1) + '%');
+  setText('m-kelly', (0.38 + Math.random() * 0.1).toFixed(2));
+  setText('m-trey', (0.16 + Math.random() * 0.04).toFixed(2));
+}, 7000);
+
+// ---------- execution panel ----------
+setInterval(() => {
+  setText('x-slip', '+' + (0.2 + Math.random() * 0.5).toFixed(1) + ' bps');
+  setText('x-flat', (14 + Math.floor(Math.random() * 12)) + 'ms');
+  setText('x-rej', (0.04 + Math.random() * 0.1).toFixed(2) + '%');
+}, 5500);
+
+// ---------- correlation heatmap ----------
+const corrTickers = ['VWRL', 'SMH', 'RKLB', 'BTC', 'GOLD', 'CASH'];
+function corrColor(v) {
+  // -1 red, 0 neutral, +1 green-ish
+  const a = Math.abs(v);
+  if (v > 0) return `background: rgba(95, 179, 212, ${a * 0.55}); color: ${a > 0.5 ? 'var(--bg-0)' : 'var(--text-0)'};`;
+  return `background: rgba(255, 85, 114, ${a * 0.45}); color: ${a > 0.5 ? 'var(--bg-0)' : 'var(--text-0)'};`;
+}
+const corrMatrix = [
+  [1.00, 0.74, 0.42, 0.31, -0.14, 0],
+  [0.74, 1.00, 0.58, 0.38, -0.21, 0],
+  [0.42, 0.58, 1.00, 0.28, -0.08, 0],
+  [0.31, 0.38, 0.28, 1.00, -0.18, 0],
+  [-0.14, -0.21, -0.08, -0.18, 1.00, 0],
+  [0, 0, 0, 0, 0, 1.00]
+];
+function renderCorr() {
+  const grid = $('#corrGrid');
+  let html = '<div></div>';
+  corrTickers.forEach(t => html += `<div class="h">${t}</div>`);
+  for (let i = 0; i < corrTickers.length; i++) {
+    html += `<div class="lbl">${corrTickers[i]}</div>`;
+    for (let j = 0; j < corrTickers.length; j++) {
+      const v = corrMatrix[i][j];
+      html += `<div class="c" style="${corrColor(v)}">${v.toFixed(2)}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+renderCorr();
+setInterval(() => {
+  // jitter the off-diagonal ones slightly
+  for (let i = 0; i < corrMatrix.length; i++) {
+    for (let j = 0; j < corrMatrix.length; j++) {
+      if (i !== j) {
+        corrMatrix[i][j] = Math.max(-0.95, Math.min(0.95, corrMatrix[i][j] + rng(0.02)));
+        corrMatrix[j][i] = corrMatrix[i][j];
+      }
+    }
+  }
+  renderCorr();
+}, 8200);
+
+// ---------- order tape ----------
+const tape = $('#tape');
+const symPool = [
+  'BTC-PERP', 'ETH-PERP', 'SOL-PERP', 'HYPE-PERP',
+  'SPY', 'QQQ', 'SMH', 'RKLB', 'LEU', 'VWRL', 'ESLT', 'FRO', 'DHT',
+  'ASTS', 'LUNR', 'SERV', 'NVDA', 'TSLA',
+  'POLY:Starship-26', 'POLY:Fed-Sep', 'POLY:MCI-EPL',
+  'SPY 528C 28MAY', 'QQQ 478P 30MAY', 'VIX 18C 18JUN'
+];
+const venues = ['HYPL', 'BYBT', 'IBKR', 'ALPC', 'POLY', 'NSDQ', 'LSE'];
+const stratNames = ['ICT-FVG', 'OB', 'EMA-9-21', 'SWEEP', 'Z-MR', 'ATR-BO', 'PAIRS', 'VRP', 'NEWS'];
+let tradesToday = 2184;
+function pushTape() {
+  const sym = symPool[Math.floor(Math.random() * symPool.length)];
+  const side = Math.random() > 0.5 ? 'B' : 'S';
+  const px = (Math.random() * 1000 + 10).toFixed(2);
+  const ven = venues[Math.floor(Math.random() * venues.length)];
+  const strat = stratNames[Math.floor(Math.random() * stratNames.length)];
+  const bps = Math.round(rng(60));
+  const bpsCls = bps >= 0 ? 'pos' : 'neg';
+  const now = new Date();
+  const ts = String(now.getHours()).padStart(2, '0') + ':' +
+             String(now.getMinutes()).padStart(2, '0') + ':' +
+             String(now.getSeconds()).padStart(2, '0') + '.' +
+             String(now.getMilliseconds()).padStart(3, '0').slice(0, 3);
+
+  const isClose = Math.random() > 0.45;
+  const tag = isClose ? `<span class="${bpsCls}">${bps >= 0 ? '+' : ''}${bps} bps</span>` : `<span class="dim">— open</span>`;
+
+  const row = document.createElement('div');
+  row.className = 'row new';
+  row.innerHTML = `
+    <span class="ts">${ts}</span>
+    <span class="ven">${ven}</span>
+    <span class="side ${side}">${side}</span>
+    <span class="sym">${sym}</span>
+    <span class="r">${px}</span>
+    <span class="strat">${strat} · ${isClose ? 'EXIT' : 'ENTRY'}</span>
+    <span class="r">${tag}</span>
+  `;
+  tape.insertBefore(row, tape.firstChild);
+  while (tape.children.length > 22) tape.removeChild(tape.lastChild);
+  tradesToday++;
+  setText('t-count', tradesToday.toLocaleString());
+}
+// seed with initial rows
+for (let i = 0; i < 12; i++) pushTape();
+// stream new fills
+function streamTape() {
+  pushTape();
+  setTimeout(streamTape, 600 + Math.random() * 2400);
+}
+streamTape();
+
+// ---------- signal feed ----------
+const feed = $('#feed');
+const feedMsgs = [
+  ['INFO', 'WebSocket reconnect <b>hyperliquid</b> — back online (412ms gap)'],
+  ['SIG',  'ICT-FVG signal <b>RKLB</b> @ 22.41 · score 0.84 · sized 0.6% NAV'],
+  ['EXEC', 'Fill <b>SOL-PERP</b> long 0.6% · entry 168.31 · stop 165.20'],
+  ['SIG',  'Z-score reversion <b>VFEG / VWRL</b> · z=−2.34 · entering pair'],
+  ['RISK', 'Vol expansion <b>SMH</b> · 5d realized 38% · trimming Δ exposure'],
+  ['EXEC', 'Exit <b>QQQ 478P</b> · +24 bps · holding 4h 12m'],
+  ['INFO', 'Polymarket resolution scheduled <b>Starship-2026</b> in 217 days'],
+  ['SIG',  'EMA-9/21 cross <b>BTC-PERP</b> · momentum confirm · entry pending'],
+  ['WARN', 'Funding rate <b>SOL-PERP</b> 0.022% — approaching 0.025% threshold'],
+  ['EXEC', 'Cancel <b>FRO</b> limit @ 18.42 · slippage forecast > 3 bps'],
+  ['SIG',  'News sentiment <b>RKLB</b> +0.62 · launch success Electron-58'],
+  ['INFO', 'Kelly sizer rebalanced · 9 strategies · half-Kelly capped at 0.5'],
+  ['RISK', 'Drawdown <b>NEWS-NLP</b> -1.8% · 7d cooldown if -2.5% breached'],
+  ['EXEC', 'Fill <b>ETH-PERP</b> long 1.2% · entry 3514.20 · TP 3580 / SL 3470'],
+  ['SIG',  'Liquidity sweep detected <b>BTC-PERP</b> · 60.2k low taken'],
+  ['INFO', 'Daily P&L attribution: SMC +1.2% / TREND +0.4% / OPTIONS +0.3%'],
+  ['EXEC', 'Closed <b>POLY:Fed-Sep</b> NO @ 0.42 · +17.6% on entry'],
+  ['HALT', 'Strategy <b>ATR-BO</b> paused — DD -2.6% · 24h cooldown active'],
+  ['SIG',  'Mean-reversion <b>HYPE-PERP</b> · 4σ extension · sized 0.3% NAV'],
+  ['INFO', 'Model retrain <b>news-sentiment</b> scheduled 03:00 UTC'],
+];
+function pushFeed() {
+  const m = feedMsgs[Math.floor(Math.random() * feedMsgs.length)];
+  const now = new Date();
+  const ts = String(now.getHours()).padStart(2, '0') + ':' +
+             String(now.getMinutes()).padStart(2, '0') + ':' +
+             String(now.getSeconds()).padStart(2, '0');
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML = `<span class="ts">${ts}</span><span class="lvl ${m[0]}">${m[0]}</span><span class="msg">${m[1]}</span>`;
+  feed.insertBefore(div, feed.firstChild);
+  while (feed.children.length > 30) feed.removeChild(feed.lastChild);
+}
+// seed
+for (let i = 0; i < 10; i++) pushFeed();
+function streamFeed() {
+  pushFeed();
+  setTimeout(streamFeed, 1500 + Math.random() * 4000);
+}
+streamFeed();
+
+// ---------- footer ----------
+setInterval(() => {
+  setText('f-mem', (1.9 + Math.random() * 0.5).toFixed(1) + 'GB');
+  setText('f-cpu', Math.floor(8 + Math.random() * 14) + '%');
+}, 3000);
+
+</script>
+</body>
+</html>

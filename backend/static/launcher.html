@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><title>Jarvis · Choose a design</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#06080b;color:#e3ebf2;font-family:'JetBrains Mono',monospace;
+  background-image:radial-gradient(1200px 600px at 20% -10%,rgba(90,209,255,.06),transparent 60%),radial-gradient(900px 520px at 90% 110%,rgba(180,140,255,.06),transparent 60%);
+  display:flex;flex-direction:column;align-items:center;padding:6vh 20px}
+.head{text-align:center;margin-bottom:8px}
+.logo{font-family:'Fraunces',serif;font-size:54px;font-weight:600;letter-spacing:1px}
+.logo b{color:#5ad1ff}
+.tag{color:#5b6b78;letter-spacing:.34em;text-transform:uppercase;font-size:11px;margin-top:4px}
+.stats{display:flex;gap:30px;margin:26px 0 40px;color:#8093a0;font-size:12px}
+.stats .v{font-family:'Fraunces',serif;font-size:24px;color:#e3ebf2;display:block}
+.stats .pos{color:#6bf0a3}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,330px));gap:22px;width:100%;max-width:1080px}
+.card{border:1px solid #16212a;border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;background:#0a0f14;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-5px);border-color:#243340;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.prev{height:150px;position:relative;overflow:hidden;border-bottom:1px solid #16212a}
+.meta{padding:18px}
+.meta h3{margin:0 0 4px;font-family:'Fraunces',serif;font-size:21px;font-weight:600}
+.meta .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#5b6b78}
+.meta p{color:#8093a0;font-size:11.5px;line-height:1.6;margin:10px 0 0}
+.go{margin-top:14px;display:inline-flex;align-items:center;gap:8px;color:#5ad1ff;font-size:12px;letter-spacing:.08em}
+/* preview A: terminal */
+.pa{background:linear-gradient(180deg,#0b1117,#070a0e)}
+.pa .l{position:absolute;left:0;top:0;bottom:0;width:34px;background:#0b1117;border-right:1px solid #16212a}
+.pa .l i{display:block;height:7px;margin:10px 8px;border-radius:2px;background:#1c2a35}.pa .l i:first-child{background:#5ad1ff}
+.pa svg{position:absolute;left:42px;right:10px;top:30px}
+.pa .big{position:absolute;left:46px;top:8px;font-family:'Fraunces',serif;color:#6bf0a3;font-size:15px}
+/* preview B: lab */
+.pb{background:#f3f1ea}
+.pb .grid{position:absolute;inset:0;background-image:linear-gradient(#0000000d 1px,transparent 1px),linear-gradient(90deg,#0000000d 1px,transparent 1px);background-size:13px 13px}
+.pb b{position:absolute;left:14px;top:12px;font-family:'IBM Plex Mono';color:#11161c;font-size:12px;letter-spacing:.05em}
+.pb .bars{position:absolute;left:14px;right:14px;bottom:16px;display:flex;gap:5px;align-items:flex-end;height:70px}
+.pb .bars i{flex:1;background:#1a3aff}
+/* preview C: editorial */
+.pc{background:#f6f1e7}
+.pc .h{position:absolute;left:18px;right:18px;top:18px;font-family:'Instrument Serif',serif;color:#1a1714;font-size:30px;line-height:.95}
+.pc .h em{color:#8a2b2b}
+.pc .r{position:absolute;left:18px;bottom:16px;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.18em;color:#6b635a;text-transform:uppercase}
+.foot{margin-top:40px;color:#4c5a66;font-size:10px;letter-spacing:.16em}
+</style>
+</head>
+<body>
+<div class="head"><div class="logo">JARV<b>I</b>S</div><div class="tag" id="tag">Trading 212 · Quant Terminal</div></div>
+<div class="stats">
+  <div><span class="v pos" id="pp">—</span>predicted 1Y profit</div>
+  <div><span class="v" id="val">—</span>portfolio value</div>
+  <div><span class="v" id="hold">—</span>holdings · pies</div>
+</div>
+<div class="cards" id="cards"></div>
+<div class="foot">PICK A LOOK · ALL THREE READ THE SAME LIVE DATA · READ-ONLY</div>
+<script>
+const DESIGNS=[
+ {id:'a',name:'Elevated Terminal',k:'dark · editorial-trader',p:'Layered dark terminal. Serif display over mono data, left-rail navigation, refined depth. Bloomberg meets editorial.',cls:'pa',prev:`<div class="l"><i></i><i></i><i></i><i></i></div><div class="big">+£374</div><svg width="220" height="90" viewBox="0 0 220 90"><polyline points="0,70 30,60 55,64 85,40 120,46 150,24 185,30 210,10" fill="none" stroke="#5ad1ff" stroke-width="2"/><polyline points="0,72 40,66 90,58 140,52 200,40" fill="none" stroke="#b48cff" stroke-width="1.4" stroke-dasharray="3 3"/></svg>`},
+ {id:'b',name:'Quant Research Lab',k:'light · scientific',p:'Clinical, grid-dense instrument. Graph-paper, mono type, one signal colour, small-multiples everywhere. A research desk.',cls:'pb',prev:`<div class="grid"></div><b>σ β Sharpe · MC</b><div class="bars">${Array.from({length:22}).map((_,i)=>`<i style="height:${20+Math.abs(Math.sin(i))*60}%"></i>`).join('')}</div>`},
+ {id:'c',name:'Bold Editorial',k:'warm · magazine',p:'Big display serif, generous space, narrative numbers. A beautiful object that frames your portfolio like a feature story.',cls:'pc',prev:`<div class="h">Beating the<br>market by <em>+4%</em></div><div class="r">predicted · ranked · forecast</div>`},
+];
+document.getElementById('cards').innerHTML=DESIGNS.map(d=>`<div class="card" onclick="pick('${d.id}')"><div class="prev ${d.cls}">${d.prev}</div><div class="meta"><div class="k">${d.k}</div><h3>${d.name}</h3><p>${d.p}</p><span class="go">Enter ${d.name} ›</span></div></div>`).join('');
+function pick(id){fetch('/api/theme/'+id,{method:'POST'}).catch(()=>{}).finally(()=>location.href='/'+id);}
+fetch('/api/rankings').then(r=>r.json()).then(rk=>{
+  const cur=(v)=>v==null?'—':'£'+Math.round(v).toLocaleString('en-GB');
+  document.getElementById('pp').textContent=(rk.portfolio_predicted_profit_1y>=0?'+':'')+cur(rk.portfolio_predicted_profit_1y);
+  document.getElementById('val').textContent=cur(rk.holdings_value);
+}).catch(()=>{});
+fetch('/api/snapshot').then(r=>r.json()).then(s=>{
+  const a=s.t212_account||{};document.getElementById('hold').textContent=(a.positions||0)+' · '+((s.performance_pies||[]).length||(s.t212_pies||[]).length);
+  if(s.config&&s.config.display_name)document.getElementById('tag').textContent=s.config.display_name;
+}).catch(()=>{});
+</script>
+</body>
+</html>

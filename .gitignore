@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Jarvis runtime data (don't commit user data)
+data/portfolio.json
+*.db
+*.sqlite
+*.jsonl
+
+# Editor
+.vscode/
+.idea/

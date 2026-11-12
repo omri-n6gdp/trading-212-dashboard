@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><title>Jarvis · The Ledger</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f2e8; --paper2:#fdfaf2; --ink:#1c1813; --ink2:#42392e; --mut:#7c715f; --faint:#a99c86;
+  --rule:#e0d7c4; --rule2:#cdc0a6; --ox:#8a2b2b; --gold:#b0832f; --green:#2f6b43; --red:#a3352b; --blue:#3a4f7a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'Newsreader',Georgia,serif;font-size:15px;line-height:1.55;
+  background-image:radial-gradient(900px 500px at 90% -5%,rgba(138,43,43,.04),transparent 60%)}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'IBM Plex Mono',monospace}
+.pos{color:var(--green)}.neg{color:var(--red)}.flat{color:var(--mut)}.mut{color:var(--mut)}.faint{color:var(--faint)}.ox{color:var(--ox)}
+/* masthead */
+.mast{border-bottom:2px solid var(--ink);position:sticky;top:0;background:rgba(247,242,232,.94);backdrop-filter:blur(8px);z-index:20}
+.mast .in{max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;align-items:baseline;gap:22px}
+.logo{font-family:'Instrument Serif',serif;font-size:34px;letter-spacing:.5px;line-height:1}
+.logo b{color:var(--ox);font-weight:400}
+.dateline{font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.mast nav{margin-left:auto;display:flex;gap:20px;align-items:baseline}
+.mast nav a{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);padding-bottom:3px;border-bottom:2px solid transparent}
+.mast nav a:hover{color:var(--ink)}
+.mast nav a.on{color:var(--ox);border-bottom-color:var(--ox)}
+.mast .sw{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;color:var(--faint)}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 28px 80px}
+.kick{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:10px}
+.hl{font-family:'Instrument Serif',serif;font-weight:400;letter-spacing:-.5px;line-height:1.02}
+.lede{font-size:19px;line-height:1.5;color:var(--ink2);max-width:680px}
+.lede b{color:var(--ink)}
+.rule{height:1px;background:var(--rule);margin:30px 0}
+.rule.thick{height:2px;background:var(--ink)}
+.grid{display:grid;gap:34px}
+.cap{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--rule);padding-bottom:6px}
+.fig{font-family:'IBM Plex Mono';font-feature-settings:'tnum' 1}
+/* data list (editorial) */
+.dl{display:grid;grid-template-columns:1fr auto;gap:0}
+.dl .r{display:contents}
+.dl dt{padding:8px 0;border-bottom:1px solid var(--rule);color:var(--ink2);font-size:15px}
+.dl dd{padding:8px 0;border-bottom:1px solid var(--rule);margin:0;text-align:right;font-family:'IBM Plex Mono';font-feature-settings:'tnum' 1;font-size:14px}
+.statline{display:flex;flex-wrap:wrap;gap:0 40px}
+.statline .s{padding:6px 0}
+.statline .s .l{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.statline .s .v{font-family:'Instrument Serif',serif;font-size:30px;line-height:1.05}
+/* ranked editorial list */
+.lead{list-style:none;margin:0;padding:0}
+.lead li{display:grid;grid-template-columns:30px 1fr auto auto;gap:14px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.lead li:hover{background:#0000000a}
+.lead .rank{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ox);text-align:center}
+.lead .nm{font-size:18px}.lead .nm small{font-family:'IBM Plex Mono';font-size:10px;color:var(--mut);letter-spacing:.06em;display:block}
+.lead .big{font-family:'Instrument Serif',serif;font-size:24px}
+.lead .sub{font-family:'IBM Plex Mono';font-size:11px;color:var(--mut);text-align:right}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);text-align:right;padding:9px 8px;border-bottom:2px solid var(--ink);cursor:pointer;white-space:nowrap;position:sticky;top:60px;background:var(--paper)}
+thead th:first-child{text-align:left}thead th.on{color:var(--ox)}
+tbody td{padding:8px;border-bottom:1px solid var(--rule);text-align:right;font-family:'IBM Plex Mono';font-feature-settings:'tnum' 1;white-space:nowrap;font-size:12px}
+tbody td:first-child{text-align:left;font-family:'Newsreader';font-size:15px}
+tbody tr:hover{background:#0000000a;cursor:pointer}
+.tk{font-weight:600}.nm2{color:var(--mut);font-size:11px;font-family:'IBM Plex Mono';display:block}
+.ctrls input{background:#fff;border:1px solid var(--rule2);font-family:'IBM Plex Mono';font-size:12px;padding:7px 11px;width:200px;outline:none;color:var(--ink)}
+.ctrls input:focus{border-color:var(--ox)}
+.tb{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--rule2);background:#fff;padding:5px 10px;cursor:pointer;color:var(--mut)}
+.tb.on{background:var(--ox);color:#fff;border-color:var(--ox)}
+.chiplet{font-family:'IBM Plex Mono';font-size:10px;padding:1px 7px;border-radius:2px;color:#fff;font-weight:600}
+.jc-tip{background:var(--ink);color:var(--paper);font-family:'IBM Plex Mono';font-size:10px}
+.back{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ox);cursor:pointer;display:inline-block;margin-bottom:18px}
+.scroll{overflow:auto}.scroll::-webkit-scrollbar{width:8px;height:8px}.scroll::-webkit-scrollbar-thumb{background:var(--rule2)}
+.legend{display:flex;gap:18px;font-family:'IBM Plex Mono';font-size:10px;color:var(--mut);margin-top:10px}.legend .li{display:flex;gap:6px;align-items:center}.legend .sw{width:16px;height:3px}
+.empty{color:var(--faint);text-align:center;padding:50px;font-family:'IBM Plex Mono'}
+.flag{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);cursor:pointer;font-size:14px}
+.note{font-style:italic;color:var(--mut);border-left:2px solid var(--ox);padding-left:12px}
+.pull{font-family:'Instrument Serif',serif;font-size:40px;line-height:1.05;letter-spacing:-1px}
+</style>
+</head>
+<body>
+<header class="mast"><div class="in">
+  <div class="logo">The&nbsp;<b>Ledger</b></div>
+  <div class="dateline" id="dateline">Trading 212 · Live</div>
+  <nav id="nav"></nav>
+  <a class="sw" href="/">⇆</a>
+</div></header>
+<div class="wrap" id="view"><div class="empty">setting the type…</div></div>
+<script src="/static/jarvis-core.js"></script>
+<script>
+const PAL=['#8a2b2b','#b0832f','#3a4f7a','#2f6b43','#6b4a8a','#a3352b','#7c715f','#557'];
+const COPT={grid:'#e3dccb',axis:'#9a8f78',ink:'#6b6151'};
+const NAV=[['overview','Front Page'],['holdings','Holdings'],['pies','Pies'],['sectors','Sectors'],['quant','Rankings']];
+const $=id=>document.getElementById(id),g=(s,d)=>JC.get(s,d);
+let sortKey='predicted_profit_1y',sortDir=-1,filter='';
+$('nav').innerHTML=NAV.map(([k,l])=>`<a href="#/${k}" data-k="${k}">${l}</a>`).join('');
+function setActive(k){document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.k===k));}
+function chrome(){const acc=g('t212_account',{}),cfg=g('config',{});$('dateline').textContent=(cfg.display_name||'Trading 212 · Live')+' — '+new Date().toUTCString().slice(5,16);}
+function chiplet(s){if(s==null)return'<span class="mut mono">—</span>';const c=s>=70?'var(--green)':s>=45?'var(--gold)':'var(--red)';return `<span class="chiplet" style="background:${c}">${s.toFixed(0)}</span>`;}
+function route(live){const h=location.hash.replace(/^#\//,'')||'overview',[page,arg]=h.split('/');setActive(page);const v=$('view');const _sy=live?v.scrollTop:0;
+  try{({overview:renderOverview,holdings:renderHoldings,pies:renderPies,sectors:renderSectors,quant:renderQuant,stock:renderStock,pie:renderPie}[page]||renderOverview)(v,arg&&decodeURIComponent(arg));}
+  catch(e){v.innerHTML=`<div class="empty">render error: ${e.message}</div>`;console.error(e);}v.scrollTop=_sy;}
+
+function renderOverview(v){
+  const acc=g('t212_account',{}),perf=g('performance_overall',{}),st=perf.stats||{},q=g('performance_quant',{}),mc=q.monte_carlo||{},rk=g('rankings',{}),bl=perf.benchmark_label||'the S&P 500';
+  const pp=rk.portfolio_predicted_profit_1y,hv=rk.holdings_value||st.holdings_value,ret=hv?pp/hv*100:0;
+  const ahead=(st.vs_sp_gbp||0)>=0;
+  v.innerHTML='';
+  // hero
+  const hero=JC.el('div');
+  hero.innerHTML=`<div class="kick">Forecast · One Year · Monte Carlo</div>
+    <div class="hl" style="font-size:64px;max-width:920px">Expected to ${pp>=0?'grow by':'fall by'} <span class="ox">${(pp>=0?'+':'')+JC.moneyC(pp)}</span></div>
+    <div class="lede" style="margin-top:18px">A projected <b>${JC.pct(ret,1)}</b> on the <b>${JC.money(hv)}</b> currently invested, with a <b>${mc.prob_profit!=null?mc.prob_profit+'%':'—'}</b> chance of ending the year in profit. The book is <b>${ahead?'ahead of':'behind'} ${bl}</b> by ${JC.moneyC(Math.abs(st.vs_sp_gbp||0))} on a same-cash basis. Forecast drift is tempered to ${mc.assumed_drift_pct!=null?mc.assumed_drift_pct+'%':'—'} a year.</div>`;
+  v.append(hero);
+  v.append(JC.el('div',{class:'rule thick'}));
+  // value chart feature
+  const vc=JC.el('div');vc.innerHTML=`<div class="cap"><span>The portfolio, reconstructed · vs ${bl} (same cash)</span><span id="cR">1Y</span></div><div id="c-curve"></div><div class="legend" id="c-leg"></div>`;v.append(vc);
+  v.append(JC.el('div',{class:'rule'}));
+  // numbers + fan two-col
+  const two=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:46px'});
+  const num=JC.el('div');
+  num.innerHTML=`<div class="cap">The numbers</div><dl class="dl">${[
+    ['Total value',JC.money(acc.total_value)],['Invested',JC.money(acc.invested)],
+    ['Unrealised P&L',`<span class="${JC.sgn(acc.ppl)}">${(acc.ppl>=0?'+':'')+JC.money(acc.ppl)}</span>`],
+    ['Total return',`<span class="${JC.sgn(st.total_return_pct)}">${JC.pct(st.total_return_pct)}</span>`],
+    ['CAGR',`<span class="${JC.sgn(st.cagr_pct)}">${JC.pct(st.cagr_pct)}</span>`],
+    ['Sharpe ratio',JC.num(st.sharpe)],['Volatility',JC.pctp(st.vol_ann_pct)],
+    ['Max drawdown',`<span class="neg">${JC.pct(st.max_dd_pct)}</span>`],
+    ['Dividends, annualised',JC.money(acc.div_annualized)],
+  ].map(([d,dd])=>`<dt>${d}</dt><dd>${dd}</dd>`).join('')}</dl>`;
+  const fan=JC.el('div');fan.innerHTML=`<div class="cap">A thousand futures · 1-year cone</div><div id="c-fan"></div>
+    <div class="statline" style="margin-top:14px"><div class="s"><div class="l">Median</div><div class="v">${JC.moneyC((mc.terminal||{}).p50)}</div></div><div class="s"><div class="l">Best (P95)</div><div class="v pos">${JC.moneyC((mc.terminal||{}).p95)}</div></div><div class="s"><div class="l">Worst (P5)</div><div class="v neg">${JC.moneyC((mc.terminal||{}).p5)}</div></div></div>`;
+  two.append(num,fan);v.append(two);
+  v.append(JC.el('div',{class:'rule'}));
+  // leaders
+  const led=JC.el('div');led.innerHTML=`<div class="cap">Where next year's profit is expected to come from</div><ol class="lead" id="c-lead"></ol>`;v.append(led);
+  setTimeout(()=>{
+    JC.lineChart($('c-curve'),[{name:'Portfolio',color:'#8a2b2b',points:(perf.curve||[]).map(p=>({t:p.t,y:p.v})),fill:true,width:2.4},(perf.sp_equiv||[]).length?{name:bl,color:'#b0832f',points:(perf.sp_equiv||[]).map(p=>({t:p.t,y:p.v})),dash:'5 4',width:1.6}:null].filter(Boolean),Object.assign({height:300,fmtY:JC.moneyC},COPT));
+    $('c-leg').innerHTML=`<div class="li"><span class="sw" style="background:#8a2b2b"></span>Your portfolio</div><div class="li"><span class="sw" style="background:#b0832f"></span>${bl}, same cash</div>`;
+    JC.fanChart($('c-fan'),mc.fan||[],{height:230,color:'#8a2b2b',band1:'rgba(138,43,43,.09)',band2:'rgba(138,43,43,.20)',grid:COPT.grid,axis:COPT.axis});
+    const byp=(rk.by_predicted_profit||[]).slice(0,7);
+    $('c-lead').innerHTML=byp.map((s,i)=>`<li onclick="location.hash='#/stock/${s.ticker}'"><span class="rank">${i+1}</span><span class="nm">${s.name||s.ticker}<small>${s.ticker} · ${s.sector||''}</small></span><span class="big ${JC.sgn(s.predicted_profit_1y)}">${(s.predicted_profit_1y>=0?'+':'')+JC.moneyC(s.predicted_profit_1y)}</span><span class="sub">${s.prob_profit!=null?s.prob_profit+'% odds':''}<br>${JC.pctp(s.nav_pct)} of book</span></li>`).join('');
+  });
+}
+
+const HCOLS=[['ticker','Holding',0],['sector','Sector',0],['nav_pct','Weight',1],['return_pct','Return',1],['ppl','P&L',1],['vol_ann_pct','Vol',1],['sharpe','Sharpe',1],['momentum_12_1_pct','Momentum',1],['score','Score',1],['predicted_profit_1y','Forecast',1]];
+function renderHoldings(v){
+  v.innerHTML=`<div class="kick">The Register</div><div class="hl" style="font-size:46px;margin-bottom:6px">Every holding</div>`;
+  const bar=JC.el('div',{class:'ctrls',style:'display:flex;gap:10px;align-items:center;margin:14px 0'});
+  bar.innerHTML=`<input id="cfil" placeholder="filter ticker or name…" value="${filter}"><a class="tb" href="/api/export/securities.csv">Export CSV</a><span class="mut mono" style="font-size:11px;margin-left:auto">${g('security_analytics',[]).length} positions</span>`;v.append(bar);
+  const wrap=JC.el('div',{class:'scroll'});wrap.style.maxHeight='calc(100vh - 230px)';wrap.innerHTML='<table id="ct"></table>';v.append(wrap);
+  drawH();$('cfil').oninput=e=>{filter=e.target.value;drawH();};
+}
+function drawH(){let rows=g('security_analytics',[]).slice();if(filter){const q=filter.toLowerCase();rows=rows.filter(r=>(r.ticker||'').toLowerCase().includes(q)||(r.name||'').toLowerCase().includes(q));}
+  rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];if(typeof x==='string')return sortDir*(''+y).localeCompare(''+x);return sortDir*((y??-1e9)-(x??-1e9));});
+  $('ct').innerHTML=`<thead><tr>${HCOLS.map(([k,l])=>`<th data-k="${k}" class="${k===sortKey?'on':''}">${l}${k===sortKey?(sortDir<0?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr onclick="location.hash='#/stock/${r.ticker}'"><td><span class="tk">${r.ticker}</span><span class="nm2">${(r.name||'').slice(0,34)}</span></td><td class="mut" style="text-align:left;font-family:'IBM Plex Mono';font-size:11px">${r.sector||'—'}</td><td>${JC.pctp(r.nav_pct)}</td><td class="${JC.sgn(r.return_pct)}">${JC.pct(r.return_pct)}</td><td class="${JC.sgn(r.ppl)}">${JC.moneyC(r.ppl)}</td><td>${JC.pctp(r.vol_ann_pct)}</td><td class="${r.sharpe>=1?'pos':''}">${JC.num(r.sharpe)}</td><td class="${JC.sgn(r.momentum_12_1_pct)}">${JC.pct(r.momentum_12_1_pct,0)}</td><td>${chiplet(r.score)}</td><td class="${JC.sgn(r.predicted_profit_1y)}">${(r.predicted_profit_1y>=0?'+':'')+JC.moneyC(r.predicted_profit_1y)}</td></tr>`).join('')}</tbody>`;
+  $('ct').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k===sortKey)sortDir*=-1;else{sortKey=k;sortDir=(k==='ticker'||k==='sector')?1:-1;}drawH();});}
+
+async function renderStock(v,tk){
+  v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ Back to holdings</span><div class="empty">loading ${tk}…</div>`;
+  let d;try{d=await JC.api('/api/stock/'+encodeURIComponent(tk));}catch{v.innerHTML='<div class="empty">failed</div>';return;}
+  if(d.error){v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ Back</span><div class="empty">${d.error}</div>`;return;}
+  const s=d.summary||{},pos=d.position||{},a=d.analyst||{},f=d.fundamentals||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<span class="back" onclick="location.hash='#/holdings'">‹ Back to holdings</span>`;
+  const head=JC.el('div');head.innerHTML=`<div class="kick">${f.sector||'Holding'} ${f.industry?'· '+f.industry:''}</div>
+    <div class="hl" style="font-size:54px">${pos.name||tk}</div>
+    <div class="lede" style="margin-top:10px">${pos.ticker||tk} · ${pos.exchange||''}. Forecast to ${s.predicted_profit_1y>=0?'add':'lose'} <b class="${JC.sgn(s.predicted_profit_1y)}">${JC.moneyC(s.predicted_profit_1y)}</b> over the next year (${s.prob_profit!=null?s.prob_profit+'% odds of profit':''}); currently <b class="${JC.sgn(pos.ppl)}">${(pos.ppl>=0?'+':'')+JC.money(pos.ppl)}</b> (${JC.pct(pos.return_pct)}) since purchase.${d.note?` <span class="note">${d.note}</span>`:''}</div>`;v.append(head);
+  v.append(JC.el('div',{class:'rule'}));
+  const two=JC.el('div',{class:'grid',style:'grid-template-columns:1.4fr 1fr;gap:40px'});
+  const left=JC.el('div');left.innerHTML=`<div class="cap">Price · trailing year, with 50 & 200-day averages</div><div id="cs-price"></div>`;
+  const right=JC.el('div');right.innerHTML=`<div class="cap">One-year cone</div><div id="cs-fan"></div>`;two.append(left,right);v.append(two);
+  v.append(JC.el('div',{class:'rule'}));
+  const two2=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:46px'});
+  const an=JC.el('div');an.innerHTML=`<div class="cap">Analytics</div><dl class="dl">${[['CAGR',JC.pct(s.cagr_pct),JC.sgn(s.cagr_pct)],['Volatility',JC.pctp(s.vol_ann_pct)],['Sharpe',JC.num(s.sharpe)],['Sortino',JC.num(s.sortino)],['Beta vs S&P',JC.num(s.beta)],['Max drawdown',JC.pct(s.max_dd_pct),'neg'],['Momentum 12-1',JC.pct(s.momentum_12_1_pct,0),JC.sgn(s.momentum_12_1_pct)],['52-week position',JC.pctp(s.range_52w_pct)],['VaR 95% (1d)','-'+JC.pctp(s.var_95_pct),'neg']].map(c=>`<dt>${c[0]}</dt><dd class="${c[2]||''}">${c[1]}</dd>`).join('')}</dl>`;
+  const fn=JC.el('div');fn.innerHTML=`<div class="cap">The Street & the fundamentals</div><dl class="dl">${[['Mean target',a.target_mean!=null?JC.num(a.target_mean,2):'—'],['Implied upside',a.upside_pct!=null?JC.pct(a.upside_pct,0):'—',JC.sgn(a.upside_pct)],['Analysts',a.num_analysts||'—'],['Consensus',(a.recommendation||'—')],['P/E',f.trailing_pe!=null?JC.num(f.trailing_pe,1):'—'],['Market cap',f.market_cap!=null?JC.moneyC(f.market_cap):'—'],['Dividend yield',f.dividend_yield!=null?JC.pctp(f.dividend_yield*100):'—'],['Moving-avg cross',s.ma_cross||'—',s.ma_cross==='golden'?'pos':s.ma_cross==='death'?'neg':'']].map(c=>`<dt>${c[0]}</dt><dd class="${c[2]||''}">${c[1]}</dd>`).join('')}</dl><div class="cap" style="margin-top:22px">Daily returns vs normal</div><div id="cs-hist"></div>`;
+  two2.append(an,fn);v.append(two2);
+  setTimeout(()=>{
+    JC.lineChart($('cs-price'),[{name:pos.ticker||tk,color:'#8a2b2b',points:(d.price_curve||[]).map(p=>({t:p.t,y:p.px})),fill:true,width:2},(d.ma50_line||[]).length?{name:'50d',color:'#b0832f',points:d.ma50_line.map(p=>({t:p.t,y:p.v})),width:1.3}:null,(d.ma200_line||[]).length?{name:'200d',color:'#3a4f7a',points:d.ma200_line.map(p=>({t:p.t,y:p.v})),width:1.3}:null].filter(Boolean),Object.assign({height:300,fmtY:v=>JC.num(v,2)},COPT));
+    JC.fanChart($('cs-fan'),mc.fan||[],{height:300,color:'#2f6b43',band1:'rgba(47,107,67,.10)',band2:'rgba(47,107,67,.20)',grid:COPT.grid,axis:COPT.axis});
+    JC.histogram($('cs-hist'),d.histogram||{},{height:170,bar:'#8a2b2b',line:'#b0832f',grid:COPT.grid,axis:COPT.axis});
+  });
+}
+
+function renderPies(v){
+  v.innerHTML=`<div class="kick">The Portfolios Within</div><div class="hl" style="font-size:46px;margin-bottom:24px">Pies</div>`;
+  const pies=g('performance_pies',[]).slice().sort((a,b)=>(b.current_value||0)-(a.current_value||0));
+  pies.forEach((p,i)=>{const st=p.stats||{};const row=JC.el('div',{style:'cursor:pointer'});row.onclick=()=>location.hash='#/pie/'+p.id;
+    row.innerHTML=`<div style="display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end">
+      <div><div class="hl" style="font-size:34px">${p.name||('Pie '+p.id)}</div><div class="mut mono" style="font-size:11px;margin-top:4px">${p.slice_count} holdings · ${JC.pctp(p.contribution_pct)} of the book · drift gap ${JC.pctp(p.rebalance_gap_pct)}</div></div>
+      <div class="statline" style="justify-content:flex-end"><div class="s"><div class="l">Forecast</div><div class="v ${JC.sgn(p.predicted_profit_1y)}">${(p.predicted_profit_1y>=0?'+':'')+JC.moneyC(p.predicted_profit_1y)}</div></div><div class="s"><div class="l">Value</div><div class="v">${JC.moneyC(p.current_value)}</div></div><div class="s"><div class="l">Return</div><div class="v ${JC.sgn(p.result_pct)}">${JC.pct(p.result_pct,0)}</div></div><div class="s"><div class="l">Sharpe</div><div class="v">${JC.num(st.sharpe)}</div></div></div></div>
+      <div id="cp-sp-${p.id}" style="height:46px;margin:10px 0"></div>`;
+    v.append(row);if(i<pies.length-1)v.append(JC.el('div',{class:'rule'}));
+    setTimeout(()=>{const cv=p.curve||[];if(cv.length>1)JC.lineChart($('cp-sp-'+p.id),[{name:'',color:p.predicted_profit_1y>=0?'#2f6b43':'#a3352b',points:cv.map(x=>({t:x.t,y:x.v})),fill:true,width:1.6}],{height:46,padL:2,padR:2,padT:4,padB:2,grid:'transparent',axis:'transparent',fmtY:()=>''});});
+  });
+}
+async function renderPie(v,pid){
+  v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ Back to pies</span><div class="empty">loading…</div>`;
+  let d;try{d=await JC.api('/api/pie/'+pid);}catch{v.innerHTML='<div class="empty">failed</div>';return;}
+  if(d.error){v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ Back</span><div class="empty">${d.error}</div>`;return;}
+  const p=d.pie||{},st=d.stats||{},mc=d.monte_carlo||{};
+  v.innerHTML=`<span class="back" onclick="location.hash='#/pies'">‹ Back to pies</span><div class="kick">Pie #${p.id} · ${p.status||'self-managed'}</div><div class="hl" style="font-size:50px">${p.name}</div>
+    <div class="lede" style="margin-top:8px">${(d.slices||[]).length} holdings · ${JC.money(p.invested)} invested, now worth <b>${JC.money(p.current_value)}</b> (<span class="${JC.sgn(p.result_pct)}">${JC.pct(p.result_pct)}</span>).</div>`;
+  v.append(JC.el('div',{class:'rule'}));
+  const two=JC.el('div',{class:'grid',style:'grid-template-columns:1.4fr 1fr;gap:40px'});
+  const l=JC.el('div');l.innerHTML=`<div class="cap">Reconstructed value · 1 year</div><div id="cpc"></div>`;
+  const r=JC.el('div');r.innerHTML=`<div class="cap">One-year cone</div><div id="cpf"></div><dl class="dl" style="margin-top:14px">${[['Total return',JC.pct(st.total_return_pct),JC.sgn(st.total_return_pct)],['Sharpe',JC.num(st.sharpe)],['Volatility',JC.pctp(st.vol_ann_pct)],['Max drawdown',JC.pct(st.max_dd_pct),'neg']].map(c=>`<dt>${c[0]}</dt><dd class="${c[2]||''}">${c[1]}</dd>`).join('')}</dl>`;two.append(l,r);v.append(two);
+  v.append(JC.el('div',{class:'rule'}));
+  const sl=JC.el('div');sl.innerHTML=`<div class="cap">Holdings · expected vs current weight</div><table><thead><tr><th>Holding</th><th>Sector</th><th>Expected</th><th>Current</th><th>Drift</th><th>Return</th></tr></thead><tbody>${(d.slices||[]).sort((a,b)=>b.current-a.current).map(s=>`<tr onclick="location.hash='#/stock/${s.ticker}'"><td class="tk">${s.ticker}</td><td class="mut" style="text-align:left;font-size:11px">${s.sector||'—'}</td><td>${JC.pctp(s.expected)}</td><td>${JC.pctp(s.current)}</td><td class="${JC.sgn(s.current-s.expected)}">${JC.pct(s.current-s.expected,1)}</td><td class="${JC.sgn(s.result_pct)}">${JC.pct(s.result_pct,1)}</td></tr>`).join('')}</tbody></table>`;v.append(sl);
+  setTimeout(()=>{JC.lineChart($('cpc'),[{name:p.name,color:'#8a2b2b',points:(d.curve||[]).map(x=>({t:x.t,y:x.v})),fill:true,width:2}],Object.assign({height:280,fmtY:JC.moneyC},COPT));JC.fanChart($('cpf'),mc.fan||[],{height:200,color:'#b0832f',band1:'rgba(176,131,47,.10)',band2:'rgba(176,131,47,.22)',grid:COPT.grid,axis:COPT.axis});});
+}
+
+function renderSectors(v){
+  const sx=g('sector_exposure',{});
+  v.innerHTML=`<div class="kick">The Lay of the Land</div><div class="hl" style="font-size:46px;margin-bottom:6px">Sectors & themes</div><div class="lede" style="margin-bottom:22px">Concentration index ${sx.sector_hhi||'—'} across ${sx.sector_count||'—'} sectors.</div>`;
+  const tm=JC.el('div');tm.innerHTML=`<div class="cap">Sector map · area is value, colour is forecast profit</div><div id="cs-tree" style="height:300px"></div>`;v.append(tm);
+  v.append(JC.el('div',{class:'rule'}));
+  const two=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:46px'});
+  const a=JC.el('div');a.innerHTML='<div class="cap">Exposure by sector</div><div id="cs-bars"></div>';
+  const b2=JC.el('div');b2.innerHTML='<div class="cap">Forecast profit by sector</div><div id="cs-attr"></div>';two.append(a,b2);v.append(two);
+  v.append(JC.el('div',{class:'rule'}));
+  const th=JC.el('div');th.innerHTML='<div class="cap">Thematic exposure</div><div id="cs-theme"></div>';v.append(th);
+  setTimeout(()=>{const secs=sx.by_sector||[],mp=Math.max(...secs.map(s=>Math.abs(s.predicted_profit||0)),1);
+    JC.treemap($('cs-tree'),secs.map(s=>({label:s.label,value:s.value,sub:s,color:JC.diverge((s.predicted_profit||0)/mp,'#a3352b','#efe7d6','#2f6b43')})),{height:300,ink:'#1c1813',stroke:'#f7f2e8',fmt:d=>d.label,fmt2:d=>JC.pctp(d.sub.pct),tip:d=>`${JC.pctp(d.sub.pct)} · ${JC.moneyC(d.value)} · forecast ${JC.moneyC(d.sub.predicted_profit)}`});
+    JC.bars($('cs-bars'),secs.map(s=>({label:s.label,pct:s.pct,value:s.value})),{colors:PAL,track:'#e7dfcc',ink:'#1c1813',sub:'#7c715f'});
+    JC.bars($('cs-attr'),secs.slice().sort((a,b)=>(b.predicted_profit||0)-(a.predicted_profit||0)).map(s=>({label:s.label,pct:Math.abs(s.predicted_profit)/mp*100,value:s.predicted_profit,color:s.predicted_profit>=0?'#2f6b43':'#a3352b'})),{track:'#e7dfcc',ink:'#1c1813',sub:'#7c715f',fmt:d=>JC.moneyC(d.value),showVal:false});
+    const t2=sx.by_theme||[];if(t2.length)JC.bars($('cs-theme'),t2.map(t=>({label:t.label,pct:t.pct,value:t.value})),{colors:PAL,track:'#e7dfcc',ink:'#1c1813',sub:'#7c715f'});else $('cs-theme').innerHTML='<div class="note">No themes matched yet — edit ~/.jarvis/jarvis.config.json.</div>';
+  });
+}
+
+function renderQuant(v){
+  const rk=g('rankings',{}),q=g('performance_quant',{}),mc=q.monte_carlo||{},m=q.metrics||{},co=g('correlation_full',{}),fl=rk.flags||{};
+  v.innerHTML=`<div class="kick">The League Table</div><div class="hl" style="font-size:46px;margin-bottom:22px">Rankings & risk</div>`;
+  const led=JC.el('div');led.innerHTML=`<div class="cap">Ranked by composite score · momentum, risk-adjusted return, trend, low-vol, value</div><ol class="lead" id="cq-lead"></ol>`;v.append(led);
+  v.append(JC.el('div',{class:'rule'}));
+  const two=JC.el('div',{class:'grid',style:'grid-template-columns:1.2fr 1fr;gap:40px'});
+  const sc=JC.el('div');sc.innerHTML='<div class="cap">Conviction vs weight</div><div id="cq-scatter"></div>';
+  const mm=JC.el('div');mm.innerHTML=`<div class="cap">Portfolio risk · vs S&P 500</div><dl class="dl">${[['Probability of profit',mc.prob_profit!=null?mc.prob_profit+'%':'—',mc.prob_profit>=50?'pos':'neg'],['1-year VaR 95%',JC.moneyC(mc.var_95_1y),'neg'],['Information ratio',JC.num(m.information_ratio)],['Up capture',JC.pctp(m.up_capture_pct)],['Down capture',JC.pctp(m.down_capture_pct)],['Ulcer index',JC.num(m.ulcer_index,1)],['Omega ratio',JC.num(m.omega_ratio)],['Effective holdings',JC.num(co.effective_holdings,1)],['Diversification',JC.pctp(m.diversification_pct)]].map(c=>`<dt>${c[0]}</dt><dd class="${c[2]||''}">${c[1]}</dd>`).join('')}</dl>`;two.append(sc,mm);v.append(two);
+  v.append(JC.el('div',{class:'rule'}));
+  const two2=JC.el('div',{class:'grid',style:'grid-template-columns:1fr 1fr;gap:46px'});
+  const rfl=JC.el('div');rfl.innerHTML=`<div class="cap">Positions to watch</div>${(fl.risk||[]).slice(0,12).map(f=>`<div class="flag" onclick="location.hash='#/stock/${f.ticker}'"><b style="flex:0 0 60px">${f.ticker}</b><span class="neg">${f.label}</span></div>`).join('')||'<div class="empty">none</div>'}`;
+  const ofl=JC.el('div');ofl.innerHTML=`<div class="cap">Opportunities</div>${(fl.opportunity||[]).slice(0,12).map(f=>`<div class="flag" onclick="location.hash='#/stock/${f.ticker}'"><b style="flex:0 0 60px">${f.ticker}</b><span class="pos">${f.label}</span></div>`).join('')||'<div class="empty">none</div>'}`;two2.append(rfl,ofl);v.append(two2);
+  setTimeout(()=>{
+    const bys=(rk.by_score||[]).slice(0,10);
+    $('cq-lead').innerHTML=bys.map((s,i)=>`<li onclick="location.hash='#/stock/${s.ticker}'"><span class="rank">${i+1}</span><span class="nm">${s.name||s.ticker}<small>${s.ticker} · forecast ${(s.predicted_profit_1y>=0?'+':'')+JC.moneyC(s.predicted_profit_1y)}</small></span><span class="big">${chiplet(s.score)}</span><span class="sub">σ ${JC.pctp(s.vol_ann_pct)}<br>mom ${JC.pct(s.momentum_12_1_pct,0)}</span></li>`).join('');
+    JC.scatter($('cq-scatter'),(rk.scored||[]).filter(s=>s.score!=null).map(s=>({x:s.score,y:s.nav_pct||0,r:Math.max(3,Math.sqrt(s.market_value||0)/2),label:s.ticker,color:s.score>=70?'#2f6b43':s.score>=45?'#b0832f':'#a3352b'})),Object.assign({height:300,xlab:'composite score',ylab:'NAV %',fmtY:v=>v.toFixed(1)+'%',xmid:50},COPT));
+  });
+}
+
+const REL=new Set(['t212_account','performance_overall','performance_quant','rankings','security_analytics','sector_exposure','correlation_full','performance_pies','config']);
+JC.boot().then(()=>{chrome();route();JC.liveSubscribe(chrome,()=>{const pg=(location.hash.replace(/^#\//,'')||'overview').split('/')[0];if(['stock','pie'].includes(pg))return;route(true);},{slices:REL});}).catch(e=>{$('view').innerHTML=`<div class="empty">failed: ${e.message}</div>`;});
+window.addEventListener('hashchange',()=>route());let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>route(true),200);});
+</script>
+</body>
+</html>
